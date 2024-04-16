@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"json-validator-go/JsonValidator"
+	"github.com/epay-technology/json-validator-go/JsonValidator"
 	"log"
 )
 
