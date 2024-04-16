@@ -1,4 +1,4 @@
-module json-validator-go
+module github.com/epay-technology/json-validator-go
 
 go 1.22
 
