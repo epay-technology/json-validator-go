@@ -126,3 +126,20 @@ func Test_it_does_not_fail_present_for_zero_value_for_objects(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 0, errorBag.CountErrors())
 }
+
+func Test_it_does_not_run_non_presence_rules_for_a_field_that_was_not_present(t *testing.T) {
+	// Arrange
+	var errorBag *JsonValidator.ErrorBag
+	jsonString := []byte(`{}`)
+	type testData struct {
+		Data any `validation:"string"`
+	}
+
+	// Act
+	_, err := JsonValidator.Validate[testData](jsonString)
+	_ = errors.As(err, &errorBag)
+
+	// Assert
+	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
+}
