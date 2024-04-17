@@ -4,7 +4,7 @@ With actual JSON validation included!
 This JSON validator operates differently from popular struct validators like [`gookit/validate`](https://github.com/gookit/validate) and [`go-playground/validator`](https://github.com/go-playground/validator). 
 **It validates JSON directly against a target data structure, rather than after unmarshalling**.
 
-The validator distinguishes between a missing key and a key with a Go zero value. 
+The validator distinguishes between a missing key and a given value with a data type's default zero value. 
 This redefines the semantics of the `required` validation rule and introduces the new rule `present`. 
 In traditional struct validators, `required` means "not the data type's default zero value" 
 but in this JSON validator, it means "the key exists in JSON and the value is not null."
