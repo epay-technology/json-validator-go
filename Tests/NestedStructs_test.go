@@ -27,6 +27,34 @@ func Test_it_can_validated_valid_nested_structs(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func Test_it_can_validate_valid_deeply_nested_structs(t *testing.T) {
+	// Arrange
+	var errorBag *JsonValidator.ErrorBag
+	jsonString := []byte(`{"Child": {"Child": {"Child": {"Data": [1,2]}}}}`)
+	type a struct {
+		Data []any `validation:"len:2"`
+	}
+
+	type b struct {
+		Child a `validation:"required"`
+	}
+
+	type c struct {
+		Child b `validation:"required"`
+	}
+
+	type d struct {
+		Child c `validation:"required"`
+	}
+
+	// Act
+	_, err := JsonValidator.Validate[d](jsonString)
+	_ = errors.As(err, &errorBag)
+
+	// Assert
+	require.NoError(t, err)
+}
+
 func Test_it_can_validated_errors_in_nested_structures(t *testing.T) {
 	// Arrange
 	var errorBag *JsonValidator.ErrorBag
@@ -46,6 +74,35 @@ func Test_it_can_validated_errors_in_nested_structures(t *testing.T) {
 	// Assert
 	require.Error(t, err)
 	require.True(t, errorBag.HasFailedKeyAndRule("Child.Data", "len"))
+}
+
+func Test_it_can_validate_errors_in_deeply_nested_structs(t *testing.T) {
+	// Arrange
+	var errorBag *JsonValidator.ErrorBag
+	jsonString := []byte(`{"Child": {"Child": {"Child": {"Data": [1,2,3]}}}}`)
+	type a struct {
+		Data []any `validation:"len:2"`
+	}
+
+	type b struct {
+		Child a `validation:"required"`
+	}
+
+	type c struct {
+		Child b `validation:"required"`
+	}
+
+	type d struct {
+		Child c `validation:"required"`
+	}
+
+	// Act
+	_, err := JsonValidator.Validate[d](jsonString)
+	_ = errors.As(err, &errorBag)
+
+	// Assert
+	require.Error(t, err)
+	require.True(t, errorBag.HasFailedKeyAndRule("Child.Child.Child.Data", "len"))
 }
 
 func Test_it_does_not_run_validation_on_nested_structures_if_parent_is_not_present(t *testing.T) {
