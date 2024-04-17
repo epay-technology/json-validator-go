@@ -2,57 +2,58 @@ package Rules
 
 import (
 	"errors"
+	"fmt"
+	"github.com/epay-technology/json-validator-go/JsonValidator"
 	"github.com/stretchr/testify/require"
-	"json-validator-go/JsonValidator"
 	"testing"
 )
 
-func Test_it_does_not_fail_len_rule_for_right_length_arrays(t *testing.T) {
-	// Arrange
-	var errorBag *JsonValidator.ErrorBag
-	jsonString := []byte(`{"Data": [1,2]}`)
-	type testData struct {
-		Data []any `validation:"len:2"`
+func Test_it_can_validate_using_len_rule(t *testing.T) {
+	// Setup
+	cases := []struct {
+		jsonString []byte
+		shouldFail bool
+	}{
+		// Valid values
+		{[]byte(`{"Data": "bc"}`), false},
+		{[]byte(`{"Data": "13"}`), false},
+		{[]byte(`{"Data": "  "}`), false},
+		{[]byte(`{"Data": [1,2]}`), false},
+		{[]byte(`{"Data": ["a",3]}`), false},
+		{[]byte(`{"Data": {"hello": "world", "foo": "bar"}}`), false},
+
+		// Invalid values
+		{[]byte(`{"Data": 123}`), true},
+		{[]byte(`{"Data": "hello world"}`), true},
+		{[]byte(`{"Data": "h"}`), true},
+		{[]byte(`{"Data": 12}`), true},
+		{[]byte(`{"Data": {}}`), true},
+		{[]byte(`{}`), true},
+		{[]byte(`{"Data": [1,2,3]}`), true},
+		{[]byte(`{"Data": null}`), true},
+		{[]byte(`{"Data": true}`), true},
 	}
 
-	// Act
-	_, err := JsonValidator.Validate[testData](jsonString)
-	_ = errors.As(err, &errorBag)
-
-	// Assert
-	require.NoError(t, err)
-}
-
-func Test_it_fails_len_rule_for_too_short_arrays(t *testing.T) {
-	// Arrange
-	var errorBag *JsonValidator.ErrorBag
-	jsonString := []byte(`{}`)
 	type testData struct {
-		Data []any `validation:"len:2"`
+		Data any `validation:"len:2"`
 	}
 
-	// Act
-	_, err := JsonValidator.Validate[testData](jsonString)
-	_ = errors.As(err, &errorBag)
+	for i, testCase := range cases {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			// Arrange
+			var errorBag *JsonValidator.ErrorBag
 
-	// Assert
-	require.Error(t, err)
-	require.True(t, errorBag.HasFailedKeyAndRule("Data", "len"))
-}
+			// Act
+			_, err := JsonValidator.Validate[testData](testCase.jsonString)
+			_ = errors.As(err, &errorBag)
 
-func Test_it_fails_len_rule_for_too_long_arrays(t *testing.T) {
-	// Arrange
-	var errorBag *JsonValidator.ErrorBag
-	jsonString := []byte(`{"Data": [1,2,3]}`)
-	type testData struct {
-		Data []any `validation:"len:2"`
+			// Assert
+			if testCase.shouldFail {
+				require.True(t, errorBag != nil)
+				require.True(t, errorBag.HasFailedKeyAndRule("Data", "len"))
+			} else {
+				require.True(t, errorBag == nil)
+			}
+		})
 	}
-
-	// Act
-	_, err := JsonValidator.Validate[testData](jsonString)
-	_ = errors.As(err, &errorBag)
-
-	// Assert
-	require.Error(t, err)
-	require.True(t, errorBag.HasFailedKeyAndRule("Data", "len"))
 }

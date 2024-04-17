@@ -522,9 +522,8 @@ func lenHelper(context *FieldValidationContext, min *int, max *int) (string, boo
 	}
 
 	valueType := reflect.ValueOf(context.Validation.Json.Value)
-	valueKind := valueType.Kind()
 
-	if valueKind != reflect.Slice && valueKind != reflect.Map {
+	if !slices.Contains([]reflect.Kind{reflect.Slice, reflect.Map, reflect.Array, reflect.String}, valueType.Kind()) {
 		return errorText, false
 	}
 
