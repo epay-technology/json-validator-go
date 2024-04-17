@@ -536,7 +536,11 @@ func lenHelper(context *FieldValidationContext, min *int, max *int) (string, boo
 	var errorText string
 
 	if min != nil && max != nil {
-		errorText = fmt.Sprintf("Lenght must be between %d and %d", *min, *max)
+		if min == max {
+			errorText = fmt.Sprintf("Lenght must be exactly %d", *min)
+		} else {
+			errorText = fmt.Sprintf("Lenght must be between %d and %d", *min, *max)
+		}
 	} else if min != nil {
 		errorText = fmt.Sprintf("Lenght must be longer than %d", *min)
 	} else if max != nil {
