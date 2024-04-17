@@ -11,7 +11,24 @@ but in this JSON validator, it means "the key exists in JSON and the value is no
 
 This allows requiring a field from a client while permitting the data type's default zero value.
 
-# Usage
+## Advantages over Traditional Struct Validators
+### Better Handling of Invalid Value Types
+Traditional struct validators struggle to handle cases where the JSON value type doesn't match the struct field type. 
+For instance, if a struct requires an integer but receives a string in the JSON, the default Go JSON unmarshaler would return a generic error, making it hard for struct validators to inform the client about the mismatch. 
+Consequently, these validators often return a generic error code 400 with a vague message like "invalid payload," leaving clients unsure how to correct their code.
+
+In contrast, the JsonValidator enables APIs to return more informative error responses. 
+By validating the JSON directly, it allows for precise error messages, such as returning a 422 status code with a validation error stating "The field must be an integer." 
+This clarity empowers clients to align their code with API specifications more effectively.
+
+### Introduction of the "Present" Rule
+Another significant benefit is the introduction of the "present" rule, which is not feasible with traditional struct validators. 
+This rule mandates that a field must be present within the JSON, ensuring that clients send values for all required fields rather than relying on the default zero values of Go struct data types.
+
+This capability enables APIs to differentiate between a client not sending any value and a client intentionally sending the default zero value. 
+Consequently, it allows for scenarios where numeric fields can accept values like 0 while enforcing the requirement for clients to provide explicit values.
+
+## Usage
 ```go
 type MyRequest struct {
     Id string `json:"id" validate:"required|string"`
