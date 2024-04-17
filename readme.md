@@ -2,7 +2,7 @@
 With actual json validation.
 
 # Usage
-```
+```go
 type MyRequest struct {
     Id string `json:"id" validate:"required|int"`
     User User `json:"user" validate:"required|object"`
