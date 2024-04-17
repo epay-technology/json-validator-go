@@ -23,6 +23,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_not_present_fields_when_one_sib
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_requireWithoutAll_for_not_present_fields_when_all_siblings_are_there(t *testing.T) {
@@ -41,6 +42,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_not_present_fields_when_all_sib
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_fail_requireWithoutAll_for_not_present_fields_no_siblings_are_there(t *testing.T) {
@@ -60,6 +62,7 @@ func Test_it_fail_requireWithoutAll_for_not_present_fields_no_siblings_are_there
 	// Assert
 	require.Error(t, err)
 	require.True(t, errorBag.HasFailedKeyAndRule("Data", "requiredWithoutAll"))
+	require.Equal(t, 1, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fails_requireWithoutAll_for_present_fields_when_one_sibling_is_there(t *testing.T) {
@@ -78,6 +81,7 @@ func Test_it_does_not_fails_requireWithoutAll_for_present_fields_when_one_siblin
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_fails_requireWithoutAll_for_null_fields_when_no_siblings_are_present(t *testing.T) {
@@ -97,6 +101,7 @@ func Test_it_fails_requireWithoutAll_for_null_fields_when_no_siblings_are_presen
 	// Assert
 	require.Error(t, err)
 	require.True(t, errorBag.HasFailedKeyAndRule("Data", "requiredWithoutAll"))
+	require.Equal(t, 1, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_int(t *testing.T) {
@@ -115,6 +120,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_int(t *testing.T
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_bool(t *testing.T) {
@@ -133,6 +139,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_bool(t *testing.
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_strings(t *testing.T) {
@@ -151,6 +158,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_strings(t *testi
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_arrays(t *testing.T) {
@@ -169,6 +177,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_arrays(t *testin
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_objects(t *testing.T) {
@@ -187,4 +196,5 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_objects(t *testi
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }

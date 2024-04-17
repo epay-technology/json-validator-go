@@ -42,8 +42,10 @@ func Test_it_can_validate_using_email_rule(t *testing.T) {
 			if testCase.shouldFail {
 				require.True(t, errorBag != nil)
 				require.True(t, errorBag.HasFailedKeyAndRule("Data", "email"))
+				require.Equal(t, 1, errorBag.CountErrors())
 			} else {
 				require.True(t, errorBag == nil)
+				require.Equal(t, 0, errorBag.CountErrors())
 			}
 		})
 	}

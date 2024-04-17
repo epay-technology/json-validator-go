@@ -26,4 +26,5 @@ func Test_it_can_register_custom_rules(t *testing.T) {
 	// Assert
 	require.Error(t, err)
 	require.True(t, errorBag.HasFailedKeyAndRule("Data", "MyRule"))
+	require.Equal(t, 1, errorBag.CountErrors())
 }

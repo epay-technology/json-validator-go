@@ -25,6 +25,7 @@ func Test_it_can_validated_valid_nested_structs(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_can_validate_valid_deeply_nested_structs(t *testing.T) {
@@ -53,6 +54,7 @@ func Test_it_can_validate_valid_deeply_nested_structs(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_can_validated_errors_in_nested_structures(t *testing.T) {
@@ -74,6 +76,7 @@ func Test_it_can_validated_errors_in_nested_structures(t *testing.T) {
 	// Assert
 	require.Error(t, err)
 	require.True(t, errorBag.HasFailedKeyAndRule("Child.Data", "len"))
+	require.Equal(t, 1, errorBag.CountErrors())
 }
 
 func Test_it_can_validate_errors_in_deeply_nested_structs(t *testing.T) {
@@ -103,6 +106,7 @@ func Test_it_can_validate_errors_in_deeply_nested_structs(t *testing.T) {
 	// Assert
 	require.Error(t, err)
 	require.True(t, errorBag.HasFailedKeyAndRule("Child.Child.Child.Data", "len"))
+	require.Equal(t, 1, errorBag.CountErrors())
 }
 
 func Test_it_does_not_run_validation_on_nested_structures_if_parent_is_not_present(t *testing.T) {

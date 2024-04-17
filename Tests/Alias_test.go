@@ -24,4 +24,5 @@ func Test_it_can_use_aliases_for_minLen_to_lenMin(t *testing.T) {
 	// Assert
 	require.Error(t, err)
 	require.True(t, errorBag.HasFailedKeyAndRule("Data", "MyAlias"))
+	require.Equal(t, 1, errorBag.CountErrors())
 }

@@ -22,6 +22,7 @@ func Test_it_fails_present_for_not_present_fields(t *testing.T) {
 	// Assert
 	require.Error(t, err)
 	require.True(t, errorBag.HasFailedKeyAndRule("Data", "present"))
+	require.Equal(t, 1, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_present_for_null_fields(t *testing.T) {
@@ -38,6 +39,7 @@ func Test_it_does_not_fail_present_for_null_fields(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_present_for_zero_value_for_int(t *testing.T) {
@@ -54,6 +56,7 @@ func Test_it_does_not_fail_present_for_zero_value_for_int(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_present_for_zero_value_for_bool(t *testing.T) {
@@ -70,6 +73,7 @@ func Test_it_does_not_fail_present_for_zero_value_for_bool(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_present_for_zero_value_for_strings(t *testing.T) {
@@ -86,6 +90,7 @@ func Test_it_does_not_fail_present_for_zero_value_for_strings(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_present_for_zero_value_for_arrays(t *testing.T) {
@@ -102,6 +107,7 @@ func Test_it_does_not_fail_present_for_zero_value_for_arrays(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_present_for_zero_value_for_objects(t *testing.T) {
@@ -118,4 +124,5 @@ func Test_it_does_not_fail_present_for_zero_value_for_objects(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }

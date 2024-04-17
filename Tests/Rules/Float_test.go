@@ -41,8 +41,10 @@ func Test_it_can_validate_using_float_rule(t *testing.T) {
 			if testCase.shouldFail {
 				require.True(t, errorBag != nil)
 				require.True(t, errorBag.HasFailedKeyAndRule("Data", "float"))
+				require.Equal(t, 1, errorBag.CountErrors())
 			} else {
 				require.True(t, errorBag == nil, string(testCase.jsonString))
+				require.Equal(t, 0, errorBag.CountErrors())
 			}
 		})
 	}
