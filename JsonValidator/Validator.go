@@ -16,6 +16,10 @@ type ErrorBag struct {
 }
 
 func (v *ErrorBag) Error() string {
+	if v == nil || v.Errors == nil {
+		return "No validation errors"
+	}
+
 	jsonBytes, _ := json.MarshalIndent(v.Errors, "", "  ")
 
 	return fmt.Sprintf("Validation Errors: \n%s", string(jsonBytes))
@@ -51,6 +55,10 @@ func (v *ErrorBag) CountErrors() int {
 
 // HasFailedKeyAndRule Is used for testing. So performance is not critical.
 func (v *ErrorBag) HasFailedKeyAndRule(key string, rule string) bool {
+	if v == nil {
+		return false
+	}
+
 	if v.Errors == nil {
 		return false
 	}

@@ -25,6 +25,24 @@ func Test_it_does_not_fail_requiredWithout_for_not_present_fields_when_sibling_i
 	require.Equal(t, 0, errorBag.CountErrors())
 }
 
+func Test_it_does_not_fail_requiredWithout_for_not_present_fields_when_sibling_is_there_with_json_alias(t *testing.T) {
+	// Arrange
+	var errorBag *JsonValidator.ErrorBag
+	jsonString := []byte(`{"sibling": null}`)
+	type testData struct {
+		Data    int `json:"data" validation:"requiredWithout:Sibling"`
+		Sibling any `json:"sibling"`
+	}
+
+	// Act
+	_, err := JsonValidator.Validate[testData](jsonString)
+	_ = errors.As(err, &errorBag)
+
+	// Assert
+	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
+}
+
 func Test_it_fails_requiredWithout_for_not_present_fields_when_sibling_is_not_there(t *testing.T) {
 	// Arrange
 	var errorBag *JsonValidator.ErrorBag
@@ -42,6 +60,47 @@ func Test_it_fails_requiredWithout_for_not_present_fields_when_sibling_is_not_th
 	require.Error(t, err)
 	require.True(t, errorBag.HasFailedKeyAndRule("Data", "requiredWithout"))
 	require.Equal(t, 1, errorBag.CountErrors())
+}
+
+func Test_it_fails_requiredWithout_for_not_present_fields_when_sibling_is_not_there_with_json_aliases(t *testing.T) {
+	// Arrange
+	var errorBag *JsonValidator.ErrorBag
+	jsonString := []byte(`{}`)
+	type testData struct {
+		Data    int `json:"data" validation:"requiredWithout:Sibling"`
+		Sibling any `json:"sibling"`
+	}
+
+	// Act
+	_, err := JsonValidator.Validate[testData](jsonString)
+	_ = errors.As(err, &errorBag)
+
+	// Assert
+	require.Error(t, err)
+	require.True(t, errorBag.HasFailedKeyAndRule("data", "requiredWithout"))
+	require.Equal(t, 1, errorBag.CountErrors())
+}
+
+func Test_it_does_not_fail_requiredWithout_for_not_present_fields_when_sibling_is_there_in_nested_struct(t *testing.T) {
+	// Arrange
+	var errorBag *JsonValidator.ErrorBag
+	jsonString := []byte(`{"child": {"sibling": true}}`)
+	type nestedData struct {
+		Data    int `json:"data" validation:"requiredWithout:Sibling"`
+		Sibling any `json:"sibling" validation:"requiredWithout:Data"`
+	}
+
+	type testData struct {
+		Child nestedData `json:"child" validation:"requiredWithout:Sibling"`
+	}
+
+	// Act
+	_, err := JsonValidator.Validate[testData](jsonString)
+	_ = errors.As(err, &errorBag)
+
+	// Assert
+	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_fails_requiredWithout_for_not_present_fields_when_no_fields_are_present(t *testing.T) {

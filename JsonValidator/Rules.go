@@ -202,6 +202,11 @@ func isNeighborsPresent(context *FieldValidationContext, fields []string, all bo
 
 	for _, field := range fields {
 		neighbor, ok := context.Validation.GetNeighborField(field)
+
+		if !ok {
+			panic(fmt.Sprintf("No such field within struct: %s - Remember: Cross field references must use the struct name, and not the json name", field))
+		}
+
 		fieldPresent := ok && neighbor.Json.KeyPresent
 		isAllPresent = isAllPresent && fieldPresent
 
