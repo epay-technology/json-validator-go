@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func Test_it_can_validate_using_intBetween_rule(t *testing.T) {
+func Test_it_can_validate_using_between_rule(t *testing.T) {
 	// Setup
 	cases := []struct {
 		jsonString []byte
@@ -17,17 +17,22 @@ func Test_it_can_validate_using_intBetween_rule(t *testing.T) {
 		{[]byte(`{"Data": 5}`), false},
 		{[]byte(`{"Data": 8}`), false},
 		{[]byte(`{"Data": 10}`), false},
+		{[]byte(`{"Data": 5.123}`), false},
+		{[]byte(`{"Data": 9.99}`), false},
+		{[]byte(`{"Data": 10.00}`), false},
 		{[]byte(`{"Data": [1,2,3]}`), true},
 		{[]byte(`{}`), true},
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": 123}`), true},
+		{[]byte(`{"Data": 10.01}`), true},
+		{[]byte(`{"Data": 4.99}`), true},
 		{[]byte(`{"Data": null}`), true},
 		{[]byte(`{"Data": true}`), true},
 	}
 
 	type testData struct {
-		Data any `validation:"intBetween:5,10"`
+		Data any `validation:"between:5,10"`
 	}
 
 	for i, testCase := range cases {
@@ -42,7 +47,7 @@ func Test_it_can_validate_using_intBetween_rule(t *testing.T) {
 			// Assert
 			if testCase.shouldFail {
 				require.True(t, errorBag != nil)
-				require.True(t, errorBag.HasFailedKeyAndRule("Data", "intBetween"))
+				require.True(t, errorBag.HasFailedKeyAndRule("Data", "between"))
 			} else {
 				require.True(t, errorBag == nil)
 			}

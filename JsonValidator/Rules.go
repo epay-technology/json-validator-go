@@ -43,7 +43,7 @@ var rules = map[string]ValidationRule{
 	"in":                 isIn,
 	"uuid":               isUuid,
 	"regex":              matchesRegex,
-	"intBetween":         isIntBetween,
+	"between":            isBetween,
 	"url":                isUrl,
 	"ip":                 isIp,
 	"email":              isEmail,
@@ -439,34 +439,28 @@ func matchesRegex(context *FieldValidationContext) (string, bool) {
 	return errorMessage, verifyRegex(context, regexString)
 }
 
-func isIntBetween(context *FieldValidationContext) (string, bool) {
-	minValue := context.GetIntParam(0)
-	maxValue := context.GetIntParam(1)
+func isBetween(context *FieldValidationContext) (string, bool) {
+	minValue := context.GetFloatParam(0)
+	maxValue := context.GetFloatParam(1)
 
-	errorMessage := fmt.Sprintf("Must be an int between %d and %d", minValue, maxValue)
+	errorMessage := fmt.Sprintf("Must be a number between %s and %s", context.GetParam(0), context.GetParam(1))
 
-	value, isInt := convertJsonValueToInt(context)
+	value, isNumber := convertJsonValueToNumber(context)
 
-	if !isInt {
+	if !isNumber {
 		return errorMessage, false
 	}
 
 	return errorMessage, minValue <= value && value <= maxValue
 }
 
-func convertJsonValueToInt(context *FieldValidationContext) (int, bool) {
+func convertJsonValueToNumber(context *FieldValidationContext) (float64, bool) {
 	reflection := reflect.ValueOf(context.Validation.Json.Value)
 
 	isFloat := slices.Contains([]reflect.Kind{reflect.Float32, reflect.Float64}, reflection.Kind())
 
 	if isFloat {
-		floatValue := reflection.Float()
-
-		if floatValue == float64(int(floatValue)) {
-			return int(floatValue), true
-		}
-
-		return 0, false
+		return reflection.Float(), true
 	}
 
 	isInt := slices.Contains([]reflect.Kind{
@@ -475,7 +469,7 @@ func convertJsonValueToInt(context *FieldValidationContext) (int, bool) {
 	}, reflection.Kind())
 
 	if isInt {
-		return int(reflection.Int()), true
+		return float64(reflection.Int()), true
 	}
 
 	return 0, false

@@ -210,6 +210,16 @@ func (context *FieldValidationContext) GetIntParam(index int) int {
 	return value
 }
 
+func (context *FieldValidationContext) GetFloatParam(index int) float64 {
+	value, err := strconv.ParseFloat(context.Params[index], 64)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return value
+}
+
 func validateField(context *ValidationContext, validation *ErrorBag) {
 	// We first execute any presence rules.
 	// This is to handle null, and keys not existing separate from value/type assertions
