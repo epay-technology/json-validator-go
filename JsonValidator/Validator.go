@@ -141,7 +141,7 @@ func Validate[T any](jsonData []byte) (*T, error) {
 	unmarshalErrors := json.Unmarshal(jsonData, &dataTarget)
 
 	targetReflection := reflect.ValueOf(dataTarget)
-	validation := &ErrorBag{}
+	validation := &ErrorBag{Errors: map[string][]string{}}
 	context := &ValidationContext{
 		Json: &JsonContext{
 			KeyPresent: true,
