@@ -14,8 +14,7 @@ type User struct {
 
 func main() {
     jsonBytes := (...)
-    var request MyRequest
     
-    data, err := JsonValidator.Validate[MyRequest](jsonBytes)
+    myRequest, err := JsonValidator.Validate[MyRequest](jsonBytes)
 }
 ```
