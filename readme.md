@@ -32,7 +32,7 @@ Consequently, it allows for scenarios where numeric fields can accept values lik
 ```go
 type MyRequest struct {
     Id string `json:"id" validate:"required|string"`
-    User User `json:"user" validate:"required|object"`
+    User *User `json:"user" validate:"required|object"`
 }
 
 type User struct {
