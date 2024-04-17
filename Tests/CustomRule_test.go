@@ -2,8 +2,8 @@ package Tests
 
 import (
 	"errors"
+	"github.com/epay-technology/json-validator-go/JsonValidator"
 	"github.com/stretchr/testify/require"
-	"json-validator-go/JsonValidator"
 	"testing"
 )
 
