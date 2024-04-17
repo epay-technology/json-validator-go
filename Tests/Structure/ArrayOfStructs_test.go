@@ -1,4 +1,4 @@
-package Tests
+package Structure
 
 import (
 	"errors"
