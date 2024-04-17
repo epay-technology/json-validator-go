@@ -41,7 +41,7 @@ func Test_it_allows_null_for_nullable_fields_even_when_not_a_pointer_type(t *tes
 	require.Equal(t, 0, errorBag.CountErrors())
 }
 
-func Test_it_does_not_run_other_validation_rules_when_value_is_null(t *testing.T) {
+func Test_it_does_not_run_other_validation_rules_when_value_is_null_and_nullable(t *testing.T) {
 	// Arrange
 	var errorBag *JsonValidator.ErrorBag
 	jsonString := []byte(`{"Data": null}`)
