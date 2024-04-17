@@ -31,12 +31,12 @@ Consequently, it allows for scenarios where numeric fields can accept values lik
 ## Usage
 ```go
 type MyRequest struct {
-    Id string `json:"id" validate:"required|string|uuid"` // Id must be present with non-null uuid string
-    User *User `json:"user" validate:"required|object"`   // User must be present with non-null object value
+    Id string `json:"id" validation:"required|string|uuid"` // Id must be present with non-null uuid string
+    User *User `json:"user" validation:"required|object"`   // User must be present with non-null object value
 }
 
 type User struct {
-    Name *string `json:"name" validate:"present|nullable|lenMax:255"` // Name must be present, but can be null or a string with a maximum length of 255 chars
+    Name *string `json:"name" validation:"present|nullable|lenMax:255"` // Name must be present, but can be null or a string with a maximum length of 255 chars
 }
 
 func main() {

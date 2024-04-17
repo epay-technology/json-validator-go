@@ -37,7 +37,6 @@ func Test_it_can_validate_using_lenBetween_rule(t *testing.T) {
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": {"a": "a"}}`), true},
 		{[]byte(`{"Data": {"a": "a", "b": "b", "c": "c", "d": "d", "e": "e"}}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": [1,2,3,4,5]}`), true},
 		{[]byte(`{"Data": null}`), true},
 		{[]byte(`{"Data": true}`), true},

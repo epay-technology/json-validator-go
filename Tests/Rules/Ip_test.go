@@ -20,7 +20,6 @@ func Test_it_can_validate_using_ip_rule(t *testing.T) {
 		{[]byte(`{"Data": "2001:0000:130F:0000:0000:09C0:876A:130B"}`), false},
 		{[]byte(`{"Data": ""}`), true},
 		{[]byte(`{"Data": [1,2,3]}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": 123}`), true},

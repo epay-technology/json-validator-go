@@ -12,7 +12,7 @@ func Test_it_can_use_aliases_for_minLen_to_lenMin(t *testing.T) {
 	JsonValidator.RegisterAlias("MyAlias", "minLen")
 
 	var errorBag *JsonValidator.ErrorBag
-	jsonString := []byte(`{}`)
+	jsonString := []byte(`{"Data": []}`)
 	type testData struct {
 		Data []any `validation:"MyAlias:2"`
 	}

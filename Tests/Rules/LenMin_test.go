@@ -33,7 +33,6 @@ func Test_it_can_validate_using_lenMin_rule(t *testing.T) {
 		{[]byte(`{"Data": 12}`), true},
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": {"foo": "bar"}}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": null}`), true},
 		{[]byte(`{"Data": true}`), true},
 	}

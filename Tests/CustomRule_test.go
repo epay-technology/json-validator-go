@@ -14,7 +14,7 @@ func Test_it_can_register_custom_rules(t *testing.T) {
 	})
 
 	var errorBag *JsonValidator.ErrorBag
-	jsonString := []byte(`{}`)
+	jsonString := []byte(`{"Data": false}`)
 	type testData struct {
 		Data []any `validation:"MyRule:2"`
 	}

@@ -28,7 +28,6 @@ func Test_it_can_validate_using_len_rule(t *testing.T) {
 		{[]byte(`{"Data": "h"}`), true},
 		{[]byte(`{"Data": 12}`), true},
 		{[]byte(`{"Data": {}}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": [1,2,3]}`), true},
 		{[]byte(`{"Data": null}`), true},
 		{[]byte(`{"Data": true}`), true},

@@ -19,7 +19,6 @@ func Test_it_can_validate_using_url_rule(t *testing.T) {
 		{[]byte(`{"Data": "www.google.dk"}`), true},
 		{[]byte(`{"Data": "google.dk"}`), true},
 		{[]byte(`{"Data": [1,2,3]}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": 123}`), true},

@@ -15,7 +15,6 @@ func Test_it_can_validate_using_object_rule(t *testing.T) {
 		shouldFail bool
 	}{
 		{[]byte(`{"Data": {}}`), false},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": [1,2,3]}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": 123}`), true},

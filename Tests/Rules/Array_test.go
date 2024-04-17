@@ -15,7 +15,6 @@ func Test_it_can_validate_using_array_rule(t *testing.T) {
 		shouldFail bool
 	}{
 		{[]byte(`{"Data": [1,2,3]}`), false},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": 123}`), true},

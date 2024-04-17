@@ -17,7 +17,6 @@ func Test_it_can_validate_using_email_rule(t *testing.T) {
 		{[]byte(`{"Data": "niki@epay.technology"}`), false},
 		{[]byte(`{"Data": ""}`), true},
 		{[]byte(`{"Data": [1,2,3]}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": 123}`), true},

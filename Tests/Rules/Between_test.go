@@ -21,7 +21,6 @@ func Test_it_can_validate_using_between_rule(t *testing.T) {
 		{[]byte(`{"Data": 9.99}`), false},
 		{[]byte(`{"Data": 10.00}`), false},
 		{[]byte(`{"Data": [1,2,3]}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": 123}`), true},

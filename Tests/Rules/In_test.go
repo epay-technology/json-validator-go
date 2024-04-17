@@ -26,7 +26,6 @@ func Test_it_can_validate_using_in_rule(t *testing.T) {
 		{[]byte(`{"Data": 23}`), true},
 		{[]byte(`{"Data": 13}`), true},
 		{[]byte(`{"Data": {}}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": [1,2,3]}`), true},
 		{[]byte(`{"Data": null}`), true},
 		{[]byte(`{"Data": true}`), true},

@@ -19,7 +19,6 @@ func Test_it_can_validate_using_float_rule(t *testing.T) {
 		{[]byte(`{"Data": true}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": {}}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": [1,2,3]}`), true},
 		{[]byte(`{"Data": null}`), true},
 	}

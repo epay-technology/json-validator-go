@@ -31,7 +31,6 @@ func Test_it_can_validate_using_uuid_rule(t *testing.T) {
 		{[]byte(`{"Data": " 00000000-0000-0000-0000-000000000000 "}`), true},
 		{[]byte(`{"Data": " 00000000-0000-0000-0000-000000000000"}`), true},
 		{[]byte(`{"Data": "00000000-0000-0000-0000-000000000000 "}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": 123}`), true},

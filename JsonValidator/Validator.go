@@ -252,9 +252,9 @@ func buildSliceEntryContext(parentContext *ValidationContext, entryValue reflect
 		// The Validation tag does not really matter, since we are never validation this exact context
 		// We are only using it as a parent context when validating an entry within a slice.
 		ValidationTag: &ValidationTag{
-			Rules:              []string{},
+			Rules:              []*rule{},
 			ExplicitlyNullable: false,
-			PresenceRules:      []string{},
+			PresenceRules:      []*rule{},
 		},
 	}
 }
@@ -310,6 +310,12 @@ func validateField(context *ValidationContext, validation *ErrorBag) {
 		return
 	}
 
+	// If the key is not present, then no additional validation should run.
+	// Clients must define a presenceRule to require a field to be present or not
+	if !context.Json.KeyPresent {
+		return
+	}
+
 	// If the value is null and the field allows null explicitly, then stop the validation here.
 	// This is due to the fact that nullable/required are special case rules.
 	// And avoids rules regarding type assertions to fail on nullable fields.
@@ -325,27 +331,19 @@ func validateField(context *ValidationContext, validation *ErrorBag) {
 	}
 }
 
-func runRules(context *ValidationContext, validation *ErrorBag, rules []string) bool {
+func runRules(context *ValidationContext, validation *ErrorBag, rules []*rule) bool {
 	errorsFound := false
 
 	for _, rule := range rules {
-		var params []string
-		split := strings.Split(rule, ":")
-		ruleName := split[0]
-
-		if len(split) > 1 {
-			params = strings.Split(split[1], ",")
-		}
-
-		ruleFunction := getRuleByName(ruleName)
+		ruleFunction := getRuleByName(rule.name)
 
 		if ruleFunction == nil {
-			log.Fatal("Could not locate Rule: " + ruleName)
+			log.Fatal("Could not locate Rule: " + rule.name)
 		}
 
-		if errorText, success := (*ruleFunction)(&FieldValidationContext{Validation: context, Params: params}); !success {
+		if errorText, success := (*ruleFunction)(&FieldValidationContext{Validation: context, Params: rule.params}); !success {
 			errorsFound = true
-			validation.AddError(context.Json.Path, fmt.Sprintf("[%s]: %s", ruleName, errorText))
+			validation.AddError(context.Json.Path, fmt.Sprintf("[%s]: %s", rule.name, errorText))
 		}
 	}
 
@@ -445,8 +443,8 @@ type JsonTag struct {
 }
 
 type ValidationTag struct {
-	Rules              []string
-	PresenceRules      []string
+	Rules              []*rule
+	PresenceRules      []*rule
 	ExplicitlyNullable bool
 }
 
@@ -468,14 +466,19 @@ func getJsonTagForSliceEntry(index int) *JsonTag {
 	return &JsonTag{JsonKey: strconv.Itoa(index)}
 }
 
+type rule struct {
+	name   string
+	params []string
+}
+
 func getValidationTag(field reflect.StructField) *ValidationTag {
 	tagline, ok := field.Tag.Lookup("validation")
 
 	if !ok || strings.TrimSpace(tagline) == "" {
 		return &ValidationTag{
-			Rules:              []string{},
+			Rules:              []*rule{},
 			ExplicitlyNullable: false,
-			PresenceRules:      []string{},
+			PresenceRules:      []*rule{},
 		}
 	}
 
@@ -483,15 +486,17 @@ func getValidationTag(field reflect.StructField) *ValidationTag {
 
 	return &ValidationTag{
 		Rules:              rules,
-		ExplicitlyNullable: sliceContainsAny(rules, nullableRules...),
 		PresenceRules:      presenceRules,
+		ExplicitlyNullable: containsNullableRules(rules, nullableRules),
 	}
 }
 
 // extractPresenceRules The first value in non-presence rules the second value is the presence rules
-func extractPresenceRules(rules []string) (nonPresenceRulesList []string, presenceRulesList []string) {
-	for _, rule := range rules {
-		if slices.Contains(presenceRules, rule) {
+func extractPresenceRules(rules []string) (nonPresenceRulesList []*rule, presenceRulesList []*rule) {
+	for _, ruleString := range rules {
+		rule := extractRule(ruleString)
+
+		if slices.Contains(presenceRules, rule.name) {
 			presenceRulesList = append(presenceRulesList, rule)
 		} else {
 			nonPresenceRulesList = append(nonPresenceRulesList, rule)
@@ -501,9 +506,24 @@ func extractPresenceRules(rules []string) (nonPresenceRulesList []string, presen
 	return nonPresenceRulesList, presenceRulesList
 }
 
-func sliceContainsAny[S ~[]E, E comparable](slice S, values ...E) bool {
+func extractRule(ruleString string) *rule {
+	var params []string
+	split := strings.Split(ruleString, ":")
+	name := split[0]
+
+	if len(split) > 1 {
+		params = strings.Split(split[1], ",")
+	}
+
+	return &rule{
+		name:   name,
+		params: params,
+	}
+}
+
+func containsNullableRules(slice []*rule, values []string) bool {
 	for _, value := range slice {
-		if slices.Contains(values, value) {
+		if slices.Contains(values, value.name) {
 			return true
 		}
 	}

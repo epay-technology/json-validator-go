@@ -34,7 +34,6 @@ func Test_it_can_validate_using_lenMax_rule(t *testing.T) {
 		// Invalid values
 		{[]byte(`{"Data": 123}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": [1,2,3]}`), true},
 		{[]byte(`{"Data": null}`), true},
 		{[]byte(`{"Data": true}`), true},

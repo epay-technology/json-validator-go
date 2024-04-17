@@ -16,7 +16,6 @@ func Test_it_can_validate_using_string_rule(t *testing.T) {
 	}{
 		{[]byte(`{"Data": "hello world"}`), false},
 		{[]byte(`{"Data": {}}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": [1,2,3]}`), true},
 		{[]byte(`{"Data": 123}`), true},
 		{[]byte(`{"Data": null}`), true},

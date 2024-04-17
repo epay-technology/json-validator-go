@@ -20,7 +20,6 @@ func Test_it_can_validate_using_regex_rule(t *testing.T) {
 		{[]byte(`{"Data": " a123-456b "}`), false},
 		{[]byte(`{"Data": "a123-b456"}`), true},
 		{[]byte(`{"Data": "dsada56dsadas-dsadas561dsada"}`), true},
-		{[]byte(`{}`), true},
 		{[]byte(`{"Data": {}}`), true},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": 123}`), true},
