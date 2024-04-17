@@ -16,7 +16,9 @@ type ErrorBag struct {
 }
 
 func (v *ErrorBag) Error() string {
-	return fmt.Sprintf("Validation Errors: %#v", v.Errors)
+	jsonBytes, _ := json.MarshalIndent(v.Errors, "", "  ")
+
+	return fmt.Sprintf("Validation Errors: \n%s", string(jsonBytes))
 }
 
 func (v *ErrorBag) GetErrorsForKey(key string) []string {

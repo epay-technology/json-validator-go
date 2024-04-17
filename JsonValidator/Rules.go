@@ -44,6 +44,8 @@ var rules = map[string]ValidationRule{
 	"uuid":               isUuid,
 	"regex":              matchesRegex,
 	"between":            isBetween,
+	"min":                isMin,
+	"max":                isMax,
 	"url":                isUrl,
 	"ip":                 isIp,
 	"email":              isEmail,
@@ -452,6 +454,32 @@ func isBetween(context *FieldValidationContext) (string, bool) {
 	}
 
 	return errorMessage, minValue <= value && value <= maxValue
+}
+
+func isMin(context *FieldValidationContext) (string, bool) {
+	minValue := context.GetFloatParam(0)
+	errorMessage := fmt.Sprintf("Must be a number greater than or equal to %s", context.GetParam(0))
+
+	value, isNumber := convertJsonValueToNumber(context)
+
+	if !isNumber {
+		return errorMessage, false
+	}
+
+	return errorMessage, minValue <= value
+}
+
+func isMax(context *FieldValidationContext) (string, bool) {
+	maxValue := context.GetFloatParam(0)
+	errorMessage := fmt.Sprintf("Must be a number less than or equal to %s", context.GetParam(0))
+
+	value, isNumber := convertJsonValueToNumber(context)
+
+	if !isNumber {
+		return errorMessage, false
+	}
+
+	return errorMessage, value <= maxValue
 }
 
 func convertJsonValueToNumber(context *FieldValidationContext) (float64, bool) {

@@ -72,6 +72,8 @@ func main() {
 | `uuid`                           | Checks that the value is an UUID string.                                                                                            |
 | `regex:{x}`                      | Checks that the value is a string that is matched by the `{x}` regex definition                                                     |
 | `between:{x},{z}`                | Checks that the value is a number between `{x}` and `{z}` inclusively                                                               |
+| `min:{x}`                        | Checks that the value is a number greater than or equal to `{x}`                                                                    |
+| `max:{x}`                        | Checks that the value is a number less than or equal to `{x}`                                                                       |
 | `url`                            | Checks that the value is a non-empty URL string                                                                                     |
 | `ip`                             | Checks that the value is a non-empty IP string                                                                                      |
 | `email`                          | Checks that the value is a non-empty email string                                                                                   |
