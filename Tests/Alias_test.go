@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func Test_it_can_use_aliases_for_minLen_to_lenMin(t *testing.T) {
+func Test_it_can_use_aliases(t *testing.T) {
 	// Arrange
 	validator := JsonValidator.New()
 	validator.RegisterAlias("MyAlias", "minLen")

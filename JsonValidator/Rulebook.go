@@ -10,14 +10,10 @@ type RuleFunction func(*FieldValidationContext) (string, bool)
 
 type ruleFunctionList map[string]RuleFunction
 
-type Rulebook struct {
-	rules map[string]Rule
-}
+type Rulebook map[string]Rule
 
 func newRulebook(rules ruleFunctionList, nullableRules []string, presenceRules []string, aliases map[string]string) *Rulebook {
-	rulebook := &Rulebook{
-		rules: map[string]Rule{},
-	}
+	rulebook := &Rulebook{}
 
 	for name, rule := range rules {
 		rulebook.RegisterRule(Rule{
@@ -35,13 +31,13 @@ func newRulebook(rules ruleFunctionList, nullableRules []string, presenceRules [
 	return rulebook
 }
 
-func (rulebook *Rulebook) RegisterRule(rule Rule) *Rulebook {
-	rulebook.rules[rule.Name] = rule
+func (rulebook Rulebook) RegisterRule(rule Rule) Rulebook {
+	rulebook[rule.Name] = rule
 
 	return rulebook
 }
 
-func (rulebook *Rulebook) RegisterAlias(alias string, name string) *Rulebook {
+func (rulebook Rulebook) RegisterAlias(alias string, name string) Rulebook {
 	rule := rulebook.getRuleDefinition(name)
 
 	rulebook.RegisterRule(Rule{
@@ -54,7 +50,7 @@ func (rulebook *Rulebook) RegisterAlias(alias string, name string) *Rulebook {
 	return rulebook
 }
 
-func (rulebook *Rulebook) GetRule(ruleDefinition string) *RuleContext {
+func (rulebook Rulebook) GetRule(ruleDefinition string) *RuleContext {
 	name, params := rulebook.parseRuleDefinition(ruleDefinition)
 	definition := rulebook.getRuleDefinition(name)
 
@@ -64,15 +60,15 @@ func (rulebook *Rulebook) GetRule(ruleDefinition string) *RuleContext {
 	}
 }
 
-func (rulebook *Rulebook) getRuleDefinition(name string) Rule {
-	if rule, ok := rulebook.rules[name]; ok {
+func (rulebook Rulebook) getRuleDefinition(name string) Rule {
+	if rule, ok := rulebook[name]; ok {
 		return rule
 	}
 
 	panic(fmt.Sprintf("No registered rule for name %s", name))
 }
 
-func (rulebook *Rulebook) parseRuleDefinition(ruleDefinition string) (string, []string) {
+func (rulebook Rulebook) parseRuleDefinition(ruleDefinition string) (string, []string) {
 	var params []string
 
 	split := strings.Split(ruleDefinition, ":")
@@ -83,9 +79,4 @@ func (rulebook *Rulebook) parseRuleDefinition(ruleDefinition string) (string, []
 	}
 
 	return name, params
-}
-
-func inMap[T comparable, V any](dictionary map[T]V, key T) bool {
-	_, present := dictionary[key]
-	return present
 }
