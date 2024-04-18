@@ -11,144 +11,12 @@ import (
 	"strings"
 )
 
-type ErrorBag struct {
-	Errors map[string][]string
-}
-
-func (v *ErrorBag) Error() string {
-	if v == nil || v.Errors == nil {
-		return "No validation errors"
-	}
-
-	jsonBytes, _ := json.MarshalIndent(v.Errors, "", "  ")
-
-	return fmt.Sprintf("Validation Errors: \n%s", string(jsonBytes))
-}
-
-func (v *ErrorBag) GetErrorsForKey(key string) []string {
-	if v.Errors == nil {
-		return []string{}
-	}
-
-	errs, ok := v.Errors[key]
-
-	if !ok {
-		return []string{}
-	}
-
-	return errs
-}
-
-func (v *ErrorBag) CountErrors() int {
-	if v == nil || v.Errors == nil {
-		return 0
-	}
-
-	count := 0
-
-	for _, list := range v.Errors {
-		count += len(list)
-	}
-
-	return count
-}
-
-// HasFailedKeyAndRule Is used for testing. So performance is not critical.
-func (v *ErrorBag) HasFailedKeyAndRule(key string, rule string) bool {
-	if v == nil {
-		return false
-	}
-
-	if v.Errors == nil {
-		return false
-	}
-
-	errorList, failedKey := v.Errors[key]
-
-	if !failedKey {
-		return false
-	}
-
-	for _, errorText := range errorList {
-		if strings.Index(errorText, fmt.Sprintf("[%s]: ", rule)) == 0 {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (v *ErrorBag) AddError(path string, description string) {
-	if v.Errors == nil {
-		v.Errors = map[string][]string{}
-	}
-
-	targetBucket, ok := v.Errors[path]
-
-	if !ok {
-		targetBucket = []string{}
-	}
-
-	v.Errors[path] = append(targetBucket, description)
-}
-
-func (v *ErrorBag) IsValid() bool {
-	return len(v.Errors) == 0
-}
-
-func (v *ErrorBag) IsInvalid() bool {
-	return !v.IsValid()
-}
-
-type ValidationError struct {
-	Path      string
-	ErrorText string
-}
-
-func (v *ValidationError) Error() string {
-	return fmt.Sprintf("Validation Errors: %s %s", v.Path, v.ErrorText)
-}
-
-type ValidationContext struct {
-	Json            *JsonContext
-	RootContext     *ValidationContext
-	ParentContext   *ValidationContext
-	Field           reflect.Value
-	FieldName       string
-	StructFieldName string
-	ValidationTag   *ValidationTag
-}
-
-func (context *ValidationContext) GetNeighborField(name string) (*ValidationContext, bool) {
-	parent := reflect.Indirect(context.ParentContext.Field)
-	structField, ok := parent.Type().FieldByName(name)
-
-	if !ok {
-		return nil, false
-	}
-
-	return buildFieldContext(
-		context.ParentContext,
-		structField,
-		parent.FieldByName(name),
-	), true
-}
-
-func (context *ValidationContext) IsRoot() bool {
-	return context.Json.Path == ""
-}
-
 type JsonContext struct {
 	Path       string // The JSON path to the key under validation
 	KeyPresent bool   // True if the key was present in the json
 	EmptyValue bool   // True if the value is either null, 0, "", {}, [], or false
 	IsNull     bool   // True if the value is null
 	Value      any    // The raw json parsed value for the key. Will be nil if KeyPresent=false
-}
-
-func (context *JsonContext) HasEmptyValue() bool {
-	// TODO: Implement
-	return false
 }
 
 func Validate[T any](jsonData []byte) (*T, error) {
@@ -282,35 +150,6 @@ func validateStructSubFields(context *ValidationContext, validation *ErrorBag) {
 
 		validateField(fieldContext, validation)
 	}
-}
-
-type FieldValidationContext struct {
-	Validation *ValidationContext
-	Params     []string
-}
-
-func (context *FieldValidationContext) GetParam(index int) string {
-	return context.Params[index]
-}
-
-func (context *FieldValidationContext) GetIntParam(index int) int {
-	value, err := strconv.Atoi(context.Params[index])
-
-	if err != nil {
-		panic(err)
-	}
-
-	return value
-}
-
-func (context *FieldValidationContext) GetFloatParam(index int) float64 {
-	value, err := strconv.ParseFloat(context.Params[index], 64)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return value
 }
 
 func validateField(context *ValidationContext, validation *ErrorBag) {
@@ -450,20 +289,6 @@ func isEmptyValue(value any) bool {
 	return false
 }
 
-type JsonTag struct {
-	JsonKey string
-}
-
-type ValidationTag struct {
-	Rules              []*rule
-	PresenceRules      []*rule
-	ExplicitlyNullable bool
-}
-
-func (tag *ValidationTag) HasRules() bool {
-	return 0 < (len(tag.Rules) + len(tag.PresenceRules))
-}
-
 func getJsonTagForStructField(field reflect.StructField) *JsonTag {
 	tagline, ok := field.Tag.Lookup("json")
 
@@ -476,11 +301,6 @@ func getJsonTagForStructField(field reflect.StructField) *JsonTag {
 
 func getJsonTagForSliceEntry(index int) *JsonTag {
 	return &JsonTag{JsonKey: strconv.Itoa(index)}
-}
-
-type rule struct {
-	name   string
-	params []string
 }
 
 func getValidationTag(field reflect.StructField) *ValidationTag {
