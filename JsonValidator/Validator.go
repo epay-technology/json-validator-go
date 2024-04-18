@@ -204,6 +204,8 @@ func traverseField(context *ValidationContext, validation *ErrorBag) {
 		validateStructSubFields(context, validation)
 	case reflect.Slice, reflect.Array:
 		validateSliceEntries(context, validation)
+	default:
+		// Do nothing
 	}
 }
 

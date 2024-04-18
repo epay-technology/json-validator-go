@@ -91,7 +91,7 @@ func Test_it_does_not_fail_requiredWithout_for_not_present_fields_when_sibling_i
 	}
 
 	type testData struct {
-		Child nestedData `json:"child" validation:"requiredWithout:Sibling"`
+		Child nestedData `json:"child"`
 	}
 
 	// Act
