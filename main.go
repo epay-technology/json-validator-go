@@ -19,7 +19,7 @@ func main() {
 	jsonString := `{"child": {"myInts": [1,2,3]}}`
 
 	var data Parent
-	err := JsonValidator.NewValidator().Validate([]byte(jsonString), &data)
+	err := JsonValidator.New().Validate([]byte(jsonString), &data)
 
 	var validationErrors *JsonValidator.ErrorBag
 	errors.As(err, &validationErrors)

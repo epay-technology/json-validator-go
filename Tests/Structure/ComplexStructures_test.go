@@ -126,7 +126,7 @@ func Test_it_can_validate_complex_structures(t *testing.T) {
 
 			// Act
 			var data CitAuthorizationRequest
-			err := JsonValidator.NewValidator().Validate(testCase.jsonString, &data)
+			err := JsonValidator.New().Validate(testCase.jsonString, &data)
 			_ = errors.As(err, &errorBag)
 
 			// Assert

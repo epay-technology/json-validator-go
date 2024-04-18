@@ -17,7 +17,7 @@ func Test_it_fails_present_for_not_present_fields(t *testing.T) {
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -36,7 +36,7 @@ func Test_it_does_not_fail_present_for_null_fields(t *testing.T) {
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -54,7 +54,7 @@ func Test_it_does_not_fail_present_for_zero_value_for_int(t *testing.T) {
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -72,7 +72,7 @@ func Test_it_does_not_fail_present_for_zero_value_for_bool(t *testing.T) {
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -90,7 +90,7 @@ func Test_it_does_not_fail_present_for_zero_value_for_strings(t *testing.T) {
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -108,7 +108,7 @@ func Test_it_does_not_fail_present_for_zero_value_for_arrays(t *testing.T) {
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -126,7 +126,7 @@ func Test_it_does_not_fail_present_for_zero_value_for_objects(t *testing.T) {
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -144,7 +144,7 @@ func Test_it_does_not_run_non_presence_rules_for_a_field_that_was_not_present(t 
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert

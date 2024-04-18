@@ -33,7 +33,7 @@ func Test_it_can_validate_using_boolean_rule(t *testing.T) {
 
 			// Act
 			var data testData
-			err := JsonValidator.NewValidator().Validate(testCase.jsonString, &data)
+			err := JsonValidator.New().Validate(testCase.jsonString, &data)
 			_ = errors.As(err, &errorBag)
 
 			// Assert

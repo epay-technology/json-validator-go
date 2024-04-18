@@ -11,11 +11,11 @@ import (
 )
 
 type Validator struct {
-	Rulebook *Rulebook
+	*Rulebook
 }
 
-func NewValidator() *Validator {
-	return &Validator{Rulebook: NewRulebook(rules, nullableRules, presenceRules, aliases)}
+func New() *Validator {
+	return &Validator{Rulebook: newRulebook(rules, nullableRules, presenceRules, aliases)}
 }
 
 type JsonContext struct {

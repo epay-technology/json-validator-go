@@ -19,7 +19,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_not_present_fields_when_one_sib
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -39,7 +39,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_not_present_fields_when_all_sib
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -59,7 +59,7 @@ func Test_it_fail_requireWithoutAll_for_not_present_fields_no_siblings_are_there
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -80,7 +80,7 @@ func Test_it_does_not_fails_requireWithoutAll_for_present_fields_when_one_siblin
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -100,7 +100,7 @@ func Test_it_fails_requireWithoutAll_for_null_fields_when_no_siblings_are_presen
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -121,7 +121,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_int(t *testing.T
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -141,7 +141,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_bool(t *testing.
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -161,7 +161,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_strings(t *testi
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -181,7 +181,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_arrays(t *testin
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -201,7 +201,7 @@ func Test_it_does_not_fail_requireWithoutAll_for_zero_value_for_objects(t *testi
 
 	// Act
 	var data testData
-	err := JsonValidator.NewValidator().Validate(jsonString, &data)
+	err := JsonValidator.New().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert

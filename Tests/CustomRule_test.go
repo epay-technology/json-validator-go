@@ -9,8 +9,8 @@ import (
 
 func Test_it_can_register_custom_rules(t *testing.T) {
 	// Arrange
-	validator := JsonValidator.NewValidator()
-	validator.Rulebook.RegisterRule("MyRule", false, false, func(context *JsonValidator.FieldValidationContext) (string, bool) {
+	validator := JsonValidator.New()
+	validator.RegisterRule("MyRule", false, false, func(context *JsonValidator.FieldValidationContext) (string, bool) {
 		return "My Rule Ran", false
 	})
 

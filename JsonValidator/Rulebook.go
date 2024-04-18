@@ -17,7 +17,7 @@ type Rulebook struct {
 	aliases       map[string]string
 }
 
-func NewRulebook(rules ruleFunctionList, nullableRules []string, presenceRules []string, aliases map[string]string) *Rulebook {
+func newRulebook(rules ruleFunctionList, nullableRules []string, presenceRules []string, aliases map[string]string) *Rulebook {
 	rulebook := &Rulebook{
 		rules:         ruleFunctionList{},
 		nullableRules: ruleFunctionList{},
