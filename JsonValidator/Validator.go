@@ -39,7 +39,7 @@ func (validator *Validator) Validate(jsonData []byte, dataTarget any) error {
 	unmarshalErrors := json.Unmarshal(jsonData, dataTarget)
 
 	targetReflection := reflect.ValueOf(dataTarget)
-	validation := &ErrorBag{Errors: map[string][]string{}}
+	validation := newErrorBag()
 	context := &ValidationContext{
 		Json: &JsonContext{
 			KeyPresent: true,

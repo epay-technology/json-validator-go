@@ -10,6 +10,10 @@ type ErrorBag struct {
 	Errors map[string][]string
 }
 
+func newErrorBag() *ErrorBag {
+	return &ErrorBag{Errors: map[string][]string{}}
+}
+
 func (v *ErrorBag) Error() string {
 	if v == nil || v.Errors == nil {
 		return "No validation errors"
