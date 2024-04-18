@@ -20,7 +20,8 @@ func Test_it_can_validate_valid_arrays_of_structs(t *testing.T) {
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -41,7 +42,8 @@ func Test_it_can_validate_invalid_arrays_of_structs(t *testing.T) {
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -63,7 +65,8 @@ func Test_it_can_validate_valid_arrays_of_arrays_of_structs(t *testing.T) {
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -84,7 +87,8 @@ func Test_it_can_validate_invalid_arrays_of_arrays_of_structs(t *testing.T) {
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert

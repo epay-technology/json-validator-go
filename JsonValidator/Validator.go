@@ -4,12 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 	"slices"
 	"strconv"
 	"strings"
 )
+
+type Validator struct {
+	Rulebook *Rulebook
+}
+
+func NewValidator() *Validator {
+	return &Validator{Rulebook: NewRulebook(rules, nullableRules, presenceRules, aliases)}
+}
 
 type JsonContext struct {
 	Path       string // The JSON path to the key under validation
@@ -19,18 +26,17 @@ type JsonContext struct {
 	Value      any    // The raw json parsed value for the key. Will be nil if KeyPresent=false
 }
 
-func Validate[T any](jsonData []byte) (*T, error) {
-	var dataTarget T
+func (validator *Validator) Validate(jsonData []byte, dataTarget any) error {
 	var jsonRaw map[string]any
 
 	// This also verifies the integrity of the payload being valid json
 	if err := json.Unmarshal(jsonData, &jsonRaw); err != nil {
-		return nil, errors.New("invalid json cannot be parsed")
+		return errors.New("invalid json cannot be parsed")
 	}
 
 	// Any errors at this point is not explicitly important.
 	// It is only important if the validation does not also find any problems
-	unmarshalErrors := json.Unmarshal(jsonData, &dataTarget)
+	unmarshalErrors := json.Unmarshal(jsonData, dataTarget)
 
 	targetReflection := reflect.ValueOf(dataTarget)
 	validation := &ErrorBag{Errors: map[string][]string{}}
@@ -39,51 +45,52 @@ func Validate[T any](jsonData []byte) (*T, error) {
 			KeyPresent: true,
 			Value:      jsonRaw,
 		},
-		Field: targetReflection,
+		Field:     targetReflection,
+		Validator: validator,
 	}
 	context.RootContext = context
 	context.ParentContext = context
 
 	// Runs the actual validation against the json
-	validateStructSubFields(context, validation)
+	validator.validateStructSubFields(context, validation)
 
 	// Validation errors has priority over any unmarshal errors
 	// Since the json validation should also discover such errors by itself
 	if validation.IsInvalid() {
-		return nil, validation
+		return validation
 	}
 
 	// If there was no validation errors, but still unmarshal errors
 	// Then our validation rules do not fully cover our API,
 	// and we fall back to returning the unmarshal errors
 	if unmarshalErrors != nil {
-		return nil, unmarshalErrors
+		return unmarshalErrors
 	}
 
-	return &dataTarget, nil
+	return nil
 }
 
 // traverseField is responsible for continuing the traversal from a specific field.
 // It does NOT validate the specific field, but traverses any sub-fields or slice entries
 // and call functions which then perform the actual validation.
-func traverseField(context *ValidationContext, validation *ErrorBag) {
+func (validator *Validator) traverseField(context *ValidationContext, validation *ErrorBag) {
 	switch reflect.Indirect(context.Field).Kind() {
 	case reflect.Struct:
-		validateStructSubFields(context, validation)
+		validator.validateStructSubFields(context, validation)
 	case reflect.Slice, reflect.Array:
-		validateSliceEntries(context, validation)
+		validator.validateSliceEntries(context, validation)
 	default:
 		// Do nothing
 	}
 }
 
-func validateSliceEntries(context *ValidationContext, validation *ErrorBag) {
+func (validator *Validator) validateSliceEntries(context *ValidationContext, validation *ErrorBag) {
 	jsonReflection := reflect.ValueOf(context.Json.Value)
 
 	// If the json value is not an array, then we cannot continue the traversal.
 	// Since there is no data left to validate.
 	// Other validation rules before this point should ensure that the type was an array and give an appropriate error
-	if !isReflectionOfArray(jsonReflection) {
+	if !validator.isReflectionOfArray(jsonReflection) {
 		return
 	}
 
@@ -106,11 +113,11 @@ func validateSliceEntries(context *ValidationContext, validation *ErrorBag) {
 
 		// TODO: Support diving, so we can validate the entry itself, and not just the entry sub fields/entries
 		// This will validate the individual entries by ensuring any of its subfields has correct values.
-		traverseField(buildSliceEntryContext(context, entryValue, i), validation)
+		validator.traverseField(validator.buildSliceEntryContext(context, entryValue, i), validation)
 	}
 }
 
-func isReflectionOfArray(value reflect.Value) bool {
+func (validator *Validator) isReflectionOfArray(value reflect.Value) bool {
 	switch value.Kind() {
 	case reflect.Slice, reflect.Array:
 		return true
@@ -119,11 +126,11 @@ func isReflectionOfArray(value reflect.Value) bool {
 	}
 }
 
-func buildSliceEntryContext(parentContext *ValidationContext, entryValue reflect.Value, index int) *ValidationContext {
-	jsonTag := getJsonTagForSliceEntry(index)
+func (validator *Validator) buildSliceEntryContext(parentContext *ValidationContext, entryValue reflect.Value, index int) *ValidationContext {
+	jsonTag := validator.getJsonTagForSliceEntry(index)
 
 	return &ValidationContext{
-		Json:            getJsonContext(parentContext, jsonTag),
+		Json:            validator.getJsonContext(parentContext, jsonTag),
 		RootContext:     parentContext.RootContext,
 		ParentContext:   parentContext,
 		Field:           entryValue,
@@ -132,32 +139,33 @@ func buildSliceEntryContext(parentContext *ValidationContext, entryValue reflect
 		// The Validation tag does not really matter, since we are never validation this exact context
 		// We are only using it as a parent context when validating an entry within a slice.
 		ValidationTag: &ValidationTag{
-			Rules:              []*rule{},
+			Rules:              []*Rule{},
 			ExplicitlyNullable: false,
-			PresenceRules:      []*rule{},
+			PresenceRules:      []*Rule{},
 		},
+		Validator: parentContext.Validator,
 	}
 }
 
-func validateStructSubFields(context *ValidationContext, validation *ErrorBag) {
+func (validator *Validator) validateStructSubFields(context *ValidationContext, validation *ErrorBag) {
 	field := reflect.Indirect(context.Field)
 	numFields := field.NumField()
 	dataType := field.Type()
 
 	for i := 0; i < numFields; i++ {
 		structField := dataType.Field(i)
-		fieldContext := buildFieldContext(context, structField, field.Field(i))
+		fieldContext := validator.buildFieldContext(context, structField, field.Field(i))
 
-		validateField(fieldContext, validation)
+		validator.validateField(fieldContext, validation)
 	}
 }
 
-func validateField(context *ValidationContext, validation *ErrorBag) {
+func (validator *Validator) validateField(context *ValidationContext, validation *ErrorBag) {
 	// We first execute any presence rules.
 	// This is to handle null, and keys not existing separate from value/type assertions
 	// If a presence error occurred, then no other validation rules should execute
 	// This makes sure we do not run validation rules on fields that were not present or has a not allowed null value
-	if presenceErrors := runRules(context, validation, context.ValidationTag.PresenceRules); presenceErrors {
+	if presenceErrors := validator.runRules(context, validation, context.ValidationTag.PresenceRules); presenceErrors {
 		return
 	}
 
@@ -175,47 +183,42 @@ func validateField(context *ValidationContext, validation *ErrorBag) {
 	}
 
 	// Then, run all non-presence rules.
-	errorsFound := runRules(context, validation, context.ValidationTag.Rules)
+	errorsFound := validator.runRules(context, validation, context.ValidationTag.Rules)
 
 	if context.Json.KeyPresent && !context.Json.IsNull && !errorsFound {
-		traverseField(context, validation)
+		validator.traverseField(context, validation)
 	}
 }
 
-func runRules(context *ValidationContext, validation *ErrorBag, rules []*rule) bool {
+func (validator *Validator) runRules(context *ValidationContext, validation *ErrorBag, rules []*Rule) bool {
 	errorsFound := false
 
 	for _, rule := range rules {
-		ruleFunction := getRuleByName(rule.name)
-
-		if ruleFunction == nil {
-			log.Fatal("Could not locate Rule: " + rule.name)
-		}
-
-		if errorText, success := (*ruleFunction)(&FieldValidationContext{Validation: context, Params: rule.params}); !success {
+		if errorText, success := rule.Function(&FieldValidationContext{Validation: context, Params: rule.Params}); !success {
 			errorsFound = true
-			validation.AddError(context.Json.Path, fmt.Sprintf("[%s]: %s", rule.name, errorText))
+			validation.AddError(context.Json.Path, fmt.Sprintf("[%s]: %s", rule.Name, errorText))
 		}
 	}
 
 	return errorsFound
 }
 
-func buildFieldContext(parentContext *ValidationContext, fieldType reflect.StructField, fieldValue reflect.Value) *ValidationContext {
-	jsonTag := getJsonTagForStructField(fieldType)
+func (validator *Validator) buildFieldContext(parentContext *ValidationContext, fieldType reflect.StructField, fieldValue reflect.Value) *ValidationContext {
+	jsonTag := validator.getJsonTagForStructField(fieldType)
 
 	return &ValidationContext{
-		Json:            getJsonContext(parentContext, jsonTag),
+		Json:            validator.getJsonContext(parentContext, jsonTag),
 		RootContext:     parentContext.RootContext,
 		ParentContext:   parentContext,
 		Field:           fieldValue,
 		FieldName:       jsonTag.JsonKey,
 		StructFieldName: fieldType.Name,
-		ValidationTag:   getValidationTag(fieldType),
+		ValidationTag:   validator.getValidationTag(fieldType),
+		Validator:       parentContext.Validator,
 	}
 }
 
-func getJsonContext(parentContext *ValidationContext, jsonTag *JsonTag) *JsonContext {
+func (validator *Validator) getJsonContext(parentContext *ValidationContext, jsonTag *JsonTag) *JsonContext {
 	path := strings.TrimLeft(parentContext.Json.Path+"."+jsonTag.JsonKey, ".")
 
 	if !parentContext.IsRoot() && !parentContext.Json.KeyPresent {
@@ -234,10 +237,10 @@ func getJsonContext(parentContext *ValidationContext, jsonTag *JsonTag) *JsonCon
 
 	if validArrayJson {
 		if err == nil && len(jsonRawArray) > index {
-			return buildJsonContextForValue(path, true, jsonRawArray[index])
+			return validator.buildJsonContextForValue(path, true, jsonRawArray[index])
 		}
 
-		return getEmptyJsonContext(path)
+		return validator.getEmptyJsonContext(path)
 	}
 
 	// Handle object json values
@@ -246,28 +249,28 @@ func getJsonContext(parentContext *ValidationContext, jsonTag *JsonTag) *JsonCon
 	if validStructJson {
 		jsonValue, present := jsonRawObject[jsonTag.JsonKey]
 
-		return buildJsonContextForValue(path, present, jsonValue)
+		return validator.buildJsonContextForValue(path, present, jsonValue)
 	}
 
 	// Every other value type
-	return getEmptyJsonContext(path)
+	return validator.getEmptyJsonContext(path)
 }
 
-func buildJsonContextForValue(path string, present bool, jsonValue any) *JsonContext {
+func (validator *Validator) buildJsonContextForValue(path string, present bool, jsonValue any) *JsonContext {
 	return &JsonContext{
 		Path:       path,
 		KeyPresent: present,
-		EmptyValue: !present || isEmptyValue(jsonValue),
+		EmptyValue: !present || validator.isEmptyValue(jsonValue),
 		IsNull:     present && jsonValue == nil,
 		Value:      jsonValue,
 	}
 }
 
-func getEmptyJsonContext(path string) *JsonContext {
-	return buildJsonContextForValue(path, false, nil)
+func (validator *Validator) getEmptyJsonContext(path string) *JsonContext {
+	return validator.buildJsonContextForValue(path, false, nil)
 }
 
-func isEmptyValue(value any) bool {
+func (validator *Validator) isEmptyValue(value any) bool {
 	switch value := reflect.ValueOf(value); value.Kind() {
 	case reflect.Map:
 		return len(value.MapKeys()) == 0
@@ -289,7 +292,7 @@ func isEmptyValue(value any) bool {
 	return false
 }
 
-func getJsonTagForStructField(field reflect.StructField) *JsonTag {
+func (validator *Validator) getJsonTagForStructField(field reflect.StructField) *JsonTag {
 	tagline, ok := field.Tag.Lookup("json")
 
 	if !ok {
@@ -299,34 +302,24 @@ func getJsonTagForStructField(field reflect.StructField) *JsonTag {
 	return &JsonTag{JsonKey: strings.Split(tagline, ",")[0]}
 }
 
-func getJsonTagForSliceEntry(index int) *JsonTag {
+func (validator *Validator) getJsonTagForSliceEntry(index int) *JsonTag {
 	return &JsonTag{JsonKey: strconv.Itoa(index)}
 }
 
-func getValidationTag(field reflect.StructField) *ValidationTag {
+func (validator *Validator) getValidationTag(field reflect.StructField) *ValidationTag {
 	tagline, ok := field.Tag.Lookup("validation")
 
-	if !ok || strings.TrimSpace(tagline) == "" {
-		return &ValidationTag{
-			Rules:              []*rule{},
-			ExplicitlyNullable: false,
-			PresenceRules:      []*rule{},
-		}
+	if !ok {
+		return newValidationTag(validator.Rulebook, "")
 	}
 
-	rules, presenceRules := extractPresenceRules(strings.Split(strings.TrimSpace(tagline), "|"))
-
-	return &ValidationTag{
-		Rules:              rules,
-		PresenceRules:      presenceRules,
-		ExplicitlyNullable: containsNullableRules(rules, nullableRules),
-	}
+	return newValidationTag(validator.Rulebook, tagline)
 }
 
 // extractPresenceRules The first value in non-presence rules the second value is the presence rules
-func extractPresenceRules(rules []string) (nonPresenceRulesList []*rule, presenceRulesList []*rule) {
+func (validator *Validator) extractPresenceRules(rules []string) (nonPresenceRulesList []*rule, presenceRulesList []*rule) {
 	for _, ruleString := range rules {
-		rule := extractRule(ruleString)
+		rule := validator.extractRule(ruleString)
 
 		if slices.Contains(presenceRules, rule.name) {
 			presenceRulesList = append(presenceRulesList, rule)
@@ -338,7 +331,7 @@ func extractPresenceRules(rules []string) (nonPresenceRulesList []*rule, presenc
 	return nonPresenceRulesList, presenceRulesList
 }
 
-func extractRule(ruleString string) *rule {
+func (validator *Validator) extractRule(ruleString string) *rule {
 	var params []string
 	split := strings.Split(ruleString, ":")
 	name := split[0]
@@ -353,7 +346,7 @@ func extractRule(ruleString string) *rule {
 	}
 }
 
-func containsNullableRules(slice []*rule, values []string) bool {
+func (validator *Validator) containsNullableRules(slice []*rule, values []string) bool {
 	for _, value := range slice {
 		if slices.Contains(values, value.name) {
 			return true

@@ -17,7 +17,8 @@ func Test_it_can_validate_valid_required_fields_with_the_nullable_rule(t *testin
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -35,7 +36,8 @@ func Test_it_can_validate_valid_required_fields_with_the_nullable_rule_when_one_
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -53,7 +55,8 @@ func Test_it_can_validate_invalid_required_fields_with_the_nullable_rule_when_al
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert

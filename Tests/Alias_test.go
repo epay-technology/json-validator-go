@@ -9,7 +9,8 @@ import (
 
 func Test_it_can_use_aliases_for_minLen_to_lenMin(t *testing.T) {
 	// Arrange
-	JsonValidator.RegisterAlias("MyAlias", "minLen")
+	validator := JsonValidator.NewValidator()
+	validator.Rulebook.RegisterAlias("MyAlias", "minLen")
 
 	var errorBag *JsonValidator.ErrorBag
 	jsonString := []byte(`{"Data": []}`)
@@ -18,7 +19,8 @@ func Test_it_can_use_aliases_for_minLen_to_lenMin(t *testing.T) {
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testData](jsonString)
+	var data testData
+	err := validator.Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert

@@ -17,7 +17,9 @@ type Child struct {
 
 func main() {
 	jsonString := `{"child": {"myInts": [1,2,3]}}`
-	data, err := JsonValidator.Validate[Parent]([]byte(jsonString))
+
+	var data Parent
+	err := JsonValidator.NewValidator().Validate([]byte(jsonString), &data)
 
 	var validationErrors *JsonValidator.ErrorBag
 	errors.As(err, &validationErrors)

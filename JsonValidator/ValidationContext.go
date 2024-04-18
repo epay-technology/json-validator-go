@@ -10,6 +10,7 @@ type ValidationContext struct {
 	FieldName       string
 	StructFieldName string
 	ValidationTag   *ValidationTag
+	Validator       *Validator
 }
 
 func (context *ValidationContext) GetNeighborField(name string) (*ValidationContext, bool) {
@@ -20,7 +21,7 @@ func (context *ValidationContext) GetNeighborField(name string) (*ValidationCont
 		return nil, false
 	}
 
-	return buildFieldContext(
+	return context.Validator.buildFieldContext(
 		context.ParentContext,
 		structField,
 		parent.FieldByName(name),

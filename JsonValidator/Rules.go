@@ -10,17 +10,7 @@ import (
 	"strings"
 )
 
-type ValidationRule func(*FieldValidationContext) (string, bool)
-
-func RegisterRule(name string, rule ValidationRule) {
-	rules[name] = rule
-}
-
-func RegisterAlias(alias string, rule string) {
-	aliases[alias] = rule
-}
-
-var rules = map[string]ValidationRule{
+var rules = map[string]RuleFunction{
 	"nullable":           nullable,
 	"required":           required,
 	"present":            present,
@@ -73,22 +63,6 @@ var presenceRules = []string{
 	"requiredWithout",
 	"requiredWithoutAny",
 	"requiredWithoutAll",
-}
-
-func getRuleByName(name string) *ValidationRule {
-	ruleFunction, ruleExists := rules[name]
-
-	if ruleExists {
-		return &ruleFunction
-	}
-
-	aliasName, aliasExists := aliases[name]
-
-	if aliasExists {
-		return getRuleByName(aliasName)
-	}
-
-	return nil
 }
 
 func requiredWith(context *FieldValidationContext) (string, bool) {

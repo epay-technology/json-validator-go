@@ -32,7 +32,8 @@ func Test_it_can_validate_using_integer_rule(t *testing.T) {
 			var errorBag *JsonValidator.ErrorBag
 
 			// Act
-			_, err := JsonValidator.Validate[testData](testCase.jsonString)
+			var data testData
+			err := JsonValidator.NewValidator().Validate(testCase.jsonString, &data)
 			_ = errors.As(err, &errorBag)
 
 			// Assert

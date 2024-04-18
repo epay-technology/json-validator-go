@@ -20,7 +20,8 @@ func Test_it_can_validated_valid_nested_structs(t *testing.T) {
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -49,7 +50,8 @@ func Test_it_can_validate_valid_deeply_nested_structs(t *testing.T) {
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[d](jsonString)
+	var data d
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -70,7 +72,8 @@ func Test_it_can_validated_errors_in_nested_structures(t *testing.T) {
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -100,7 +103,8 @@ func Test_it_can_validate_errors_in_deeply_nested_structs(t *testing.T) {
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[d](jsonString)
+	var data d
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -122,7 +126,8 @@ func Test_it_does_not_run_validation_on_nested_structures_if_parent_is_not_prese
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -144,7 +149,8 @@ func Test_it_does_not_run_validation_on_nested_structures_if_parent_is_null(t *t
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
@@ -166,7 +172,8 @@ func Test_it_does_not_run_validation_on_nested_structures_if_parent_has_errors(t
 	}
 
 	// Act
-	_, err := JsonValidator.Validate[testDataParent](jsonString)
+	var data testDataParent
+	err := JsonValidator.NewValidator().Validate(jsonString, &data)
 	_ = errors.As(err, &errorBag)
 
 	// Assert
