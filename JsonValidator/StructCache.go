@@ -26,7 +26,17 @@ func newStructCache() *StructCache {
 	return &StructCache{Cache: map[reflect.Type]*FieldCache{}}
 }
 
-func (structCache *StructCache) analyze(rulebook *Rulebook, targetType reflect.Type) (*FieldCache, error) {
+func (fieldCache *FieldCache) GetChildByName(name string) *FieldCache {
+	for _, child := range fieldCache.Children {
+		if child.StructKey == name {
+			return child
+		}
+	}
+
+	return nil
+}
+
+func (structCache *StructCache) Analyze(rulebook *Rulebook, targetType reflect.Type) (*FieldCache, error) {
 	// Unwrap pointer types, since we only focus on the underlying struct type
 	targetType = structCache.typeIndirect(targetType)
 
@@ -37,7 +47,7 @@ func (structCache *StructCache) analyze(rulebook *Rulebook, targetType reflect.T
 
 	// We only allow analyzing structs as root data types
 	if targetType.Kind() != reflect.Struct {
-		return nil, errors.New(fmt.Sprintf("the struct cache can only analyze struct types %s given", targetType.Kind().String()))
+		return nil, errors.New(fmt.Sprintf("the struct cache can only Analyze struct types %s given", targetType.Kind().String()))
 	}
 
 	root := &FieldCache{
@@ -84,7 +94,7 @@ func (structCache *StructCache) traverseStruct(parent *FieldCache, rulebook *Rul
 
 	for i := 0; i < numFields; i++ {
 		structField := parent.Reflection.Field(i)
-		structType := structField.Type
+		structType := structCache.typeIndirect(structField.Type)
 
 		field := &FieldCache{
 			Parent:        parent,
@@ -136,7 +146,7 @@ func (structCache *StructCache) getValidationTag(field reflect.StructField, rule
 
 func (structCache *StructCache) traverseSlice(parent *FieldCache, rulebook *Rulebook) *FieldCache {
 	sliceElem := structCache.typeIndirect(parent.Reflection)
-	sliceSubtype := sliceElem.Elem()
+	sliceSubtype := structCache.typeIndirect(sliceElem.Elem())
 
 	field := &FieldCache{
 		Parent:        parent,

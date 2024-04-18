@@ -230,3 +230,79 @@ func Test_it_can_analyze_deeply_nested_arrays_of_structs(t *testing.T) {
 	require.Len(t, innerField.ValidationTag.PresenceRules, 1)
 	require.Equal(t, innerField.ValidationTag.PresenceRules[0].Name, "required")
 }
+
+func Test_it_can_analyse_nilable_structs(t *testing.T) {
+	// Arrange
+	validator := JsonValidator.New()
+	type child struct {
+		Id int `json:"id" validation:"required|integer"`
+	}
+
+	type simpleStruct struct {
+		Child1 *child `json:"child1" validation:"nullable|object"`
+		Child2 *child `json:"child2" validation:"nullable|object"`
+	}
+
+	// Act
+	var data simpleStruct
+	fieldCache, err := validator.Analyze(&data)
+
+	// Assert
+	require.NoError(t, err)
+
+	// Root
+	require.Len(t, fieldCache.Children, 2)
+
+	require.Len(t, fieldCache.Children[0].Children, 1)
+	require.Len(t, fieldCache.Children[1].Children, 1)
+}
+
+func Test_it_can_analyse_arrays_of_nilable_structs(t *testing.T) {
+	// Arrange
+	validator := JsonValidator.New()
+	type child struct {
+		Id int `json:"id" validation:"required|integer"`
+	}
+
+	type simpleStruct struct {
+		Child1 []*child `json:"child1" validation:"nullable|object"`
+	}
+
+	// Act
+	var data simpleStruct
+	fieldCache, err := validator.Analyze(&data)
+
+	// Assert
+	require.NoError(t, err)
+
+	// Root
+	require.Len(t, fieldCache.Children, 1)
+	require.Len(t, fieldCache.Children[0].Children, 1)
+	require.Len(t, fieldCache.Children[0].Children[0].Children, 1)
+	require.Len(t, fieldCache.Children[0].Children[0].Children[0].Children, 0)
+}
+
+func Test_it_can_analyse_nilable_arrays(t *testing.T) {
+	// Arrange
+	validator := JsonValidator.New()
+	type child struct {
+		Id int `json:"id" validation:"required|integer"`
+	}
+
+	type simpleStruct struct {
+		Child1 *[]child `json:"child1" validation:"nullable|object"`
+	}
+
+	// Act
+	var data simpleStruct
+	fieldCache, err := validator.Analyze(&data)
+
+	// Assert
+	require.NoError(t, err)
+
+	// Root
+	require.Len(t, fieldCache.Children, 1)
+	require.Len(t, fieldCache.Children[0].Children, 1)
+	require.Len(t, fieldCache.Children[0].Children[0].Children, 1)
+	require.Len(t, fieldCache.Children[0].Children[0].Children[0].Children, 0)
+}

@@ -1,12 +1,10 @@
 package JsonValidator
 
-import "reflect"
-
 type ValidationContext struct {
 	Json            *JsonContext
 	RootContext     *ValidationContext
 	ParentContext   *ValidationContext
-	Field           reflect.Value
+	Field           *FieldCache
 	FieldName       string
 	StructFieldName string
 	ValidationTag   *ValidationTag
@@ -14,18 +12,13 @@ type ValidationContext struct {
 }
 
 func (context *ValidationContext) GetNeighborField(name string) (*ValidationContext, bool) {
-	parent := reflect.Indirect(context.ParentContext.Field)
-	structField, ok := parent.Type().FieldByName(name)
+	neighbor := context.Field.Parent.GetChildByName(name)
 
-	if !ok {
+	if neighbor == nil {
 		return nil, false
 	}
 
-	return context.Validator.buildFieldContext(
-		context.ParentContext,
-		structField,
-		parent.FieldByName(name),
-	), true
+	return context.Validator.buildFieldContext(context.ParentContext, neighbor), true
 }
 
 func (context *ValidationContext) IsRoot() bool {

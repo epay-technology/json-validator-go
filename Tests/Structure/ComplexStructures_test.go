@@ -93,7 +93,7 @@ func Test_it_can_validate_complex_structures(t *testing.T) {
 		ExpireMonth string `json:"expire_month" validation:"required|len:2"`
 		ExpireYear  string `json:"expire_year" validation:"required|len:2"`
 		Eci         string `json:"eci" validation:"required|len:2"`
-		Cryptogram  string `json:"cryptogram" validation:"required|len28"`
+		Cryptogram  string `json:"cryptogram" validation:"required|len:28"`
 	}
 
 	type PaymentMethod struct {
