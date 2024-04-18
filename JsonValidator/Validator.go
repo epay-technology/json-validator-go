@@ -12,10 +12,14 @@ import (
 
 type Validator struct {
 	*Rulebook
+	structCache *StructCache
 }
 
 func New() *Validator {
-	return &Validator{Rulebook: newRulebook(rules, nullableRules, presenceRules, aliases)}
+	return &Validator{
+		Rulebook:    newRulebook(rules, nullableRules, presenceRules, aliases),
+		structCache: newStructCache(),
+	}
 }
 
 type JsonContext struct {
@@ -68,6 +72,10 @@ func (validator *Validator) Validate(jsonData []byte, dataTarget any) error {
 	}
 
 	return nil
+}
+
+func (validator *Validator) Analyze(dataTarget any) (*FieldCache, error) {
+	return validator.structCache.analyze(validator.Rulebook, reflect.TypeOf(dataTarget))
 }
 
 // traverseField is responsible for continuing the traversal from a specific field.
