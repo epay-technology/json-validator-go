@@ -10,8 +10,13 @@ import (
 func Test_it_can_register_custom_rules(t *testing.T) {
 	// Arrange
 	validator := JsonValidator.New()
-	validator.RegisterRule("MyRule", false, false, func(context *JsonValidator.FieldValidationContext) (string, bool) {
-		return "My Rule Ran", false
+	validator.RegisterRule(JsonValidator.Rule{
+		Name:           "MyRule",
+		IsPresenceRule: false,
+		IsNullableRule: false,
+		Function: func(context *JsonValidator.FieldValidationContext) (string, bool) {
+			return "My RuleContext Ran", false
+		},
 	})
 
 	var errorBag *JsonValidator.ErrorBag

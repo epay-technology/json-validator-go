@@ -5,18 +5,22 @@ import (
 )
 
 type Rule struct {
-	Function       RuleFunction
-	Params         []string
 	Name           string
 	IsPresenceRule bool
 	IsNullableRule bool
+	Function       RuleFunction
 }
 
-func (context *Rule) GetStringParam(index int) string {
+type RuleContext struct {
+	Rule
+	Params []string
+}
+
+func (context *RuleContext) GetStringParam(index int) string {
 	return context.Params[index]
 }
 
-func (context *Rule) GetIntParam(index int) int {
+func (context *RuleContext) GetIntParam(index int) int {
 	value, err := strconv.Atoi(context.Params[index])
 
 	if err != nil {
@@ -26,7 +30,7 @@ func (context *Rule) GetIntParam(index int) int {
 	return value
 }
 
-func (context *Rule) GetFloatParam(index int) float64 {
+func (context *RuleContext) GetFloatParam(index int) float64 {
 	value, err := strconv.ParseFloat(context.Params[index], 64)
 
 	if err != nil {

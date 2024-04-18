@@ -11,71 +11,62 @@ type RuleFunction func(*FieldValidationContext) (string, bool)
 type ruleFunctionList map[string]RuleFunction
 
 type Rulebook struct {
-	rules         ruleFunctionList
-	nullableRules ruleFunctionList
-	presenceRules ruleFunctionList
-	aliases       map[string]string
+	rules map[string]Rule
 }
 
 func newRulebook(rules ruleFunctionList, nullableRules []string, presenceRules []string, aliases map[string]string) *Rulebook {
 	rulebook := &Rulebook{
-		rules:         ruleFunctionList{},
-		nullableRules: ruleFunctionList{},
-		presenceRules: ruleFunctionList{},
-		aliases:       aliases,
+		rules: map[string]Rule{},
 	}
 
 	for name, rule := range rules {
-		rulebook.RegisterRule(
-			name,
-			slices.Contains(presenceRules, name),
-			slices.Contains(nullableRules, name),
-			rule,
-		)
+		rulebook.RegisterRule(Rule{
+			Name:           name,
+			Function:       rule,
+			IsPresenceRule: slices.Contains(presenceRules, name),
+			IsNullableRule: slices.Contains(nullableRules, name),
+		})
+	}
+
+	for alias, name := range aliases {
+		rulebook.RegisterAlias(alias, name)
 	}
 
 	return rulebook
 }
 
-func (rulebook *Rulebook) RegisterRule(name string, isPresenceRule bool, isNullableRule bool, function RuleFunction) *Rulebook {
-	if isPresenceRule {
-		rulebook.presenceRules[name] = function
-	}
-
-	if isNullableRule {
-		rulebook.nullableRules[name] = function
-	}
-
-	rulebook.rules[name] = function
+func (rulebook *Rulebook) RegisterRule(rule Rule) *Rulebook {
+	rulebook.rules[rule.Name] = rule
 
 	return rulebook
 }
 
 func (rulebook *Rulebook) RegisterAlias(alias string, name string) *Rulebook {
-	rulebook.aliases[alias] = name
+	rule := rulebook.getRuleDefinition(name)
+
+	rulebook.RegisterRule(Rule{
+		Name:           alias,
+		IsPresenceRule: rule.IsPresenceRule,
+		IsNullableRule: rule.IsNullableRule,
+		Function:       rule.Function,
+	})
 
 	return rulebook
 }
 
-func (rulebook *Rulebook) GetRule(ruleDefinition string) *Rule {
+func (rulebook *Rulebook) GetRule(ruleDefinition string) *RuleContext {
 	name, params := rulebook.parseRuleDefinition(ruleDefinition)
+	definition := rulebook.getRuleDefinition(name)
 
-	return &Rule{
-		Function:       rulebook.getRuleFunction(name),
-		Params:         params,
-		Name:           name,
-		IsNullableRule: inMap(rulebook.nullableRules, name),
-		IsPresenceRule: inMap(rulebook.presenceRules, name),
+	return &RuleContext{
+		Rule:   definition,
+		Params: params,
 	}
 }
 
-func (rulebook *Rulebook) getRuleFunction(name string) RuleFunction {
-	if function, ok := rulebook.rules[name]; ok {
-		return function
-	}
-
-	if aliases, ok := rulebook.aliases[name]; ok {
-		return rulebook.getRuleFunction(aliases)
+func (rulebook *Rulebook) getRuleDefinition(name string) Rule {
+	if rule, ok := rulebook.rules[name]; ok {
+		return rule
 	}
 
 	panic(fmt.Sprintf("No registered rule for name %s", name))

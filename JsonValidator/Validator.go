@@ -139,9 +139,9 @@ func (validator *Validator) buildSliceEntryContext(parentContext *ValidationCont
 		// The Validation tag does not really matter, since we are never validation this exact context
 		// We are only using it as a parent context when validating an entry within a slice.
 		ValidationTag: &ValidationTag{
-			Rules:              []*Rule{},
+			Rules:              []*RuleContext{},
 			ExplicitlyNullable: false,
-			PresenceRules:      []*Rule{},
+			PresenceRules:      []*RuleContext{},
 		},
 		Validator: parentContext.Validator,
 	}
@@ -190,7 +190,7 @@ func (validator *Validator) validateField(context *ValidationContext, validation
 	}
 }
 
-func (validator *Validator) runRules(context *ValidationContext, validation *ErrorBag, rules []*Rule) bool {
+func (validator *Validator) runRules(context *ValidationContext, validation *ErrorBag, rules []*RuleContext) bool {
 	errorsFound := false
 
 	for _, rule := range rules {

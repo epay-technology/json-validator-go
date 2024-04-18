@@ -7,22 +7,22 @@ type JsonTag struct {
 }
 
 type ValidationTag struct {
-	Rules              []*Rule
-	PresenceRules      []*Rule
+	Rules              []*RuleContext
+	PresenceRules      []*RuleContext
 	ExplicitlyNullable bool
 }
 
 func newValidationTag(rulebook *Rulebook, tagline string) *ValidationTag {
 	if tagline == "" {
 		return &ValidationTag{
-			Rules:              []*Rule{},
-			PresenceRules:      []*Rule{},
+			Rules:              []*RuleContext{},
+			PresenceRules:      []*RuleContext{},
 			ExplicitlyNullable: false,
 		}
 	}
 
-	var rules []*Rule
-	var presenceRules []*Rule
+	var rules []*RuleContext
+	var presenceRules []*RuleContext
 	explicitNullable := false
 
 	ruleDefinitions := strings.Split(strings.TrimSpace(tagline), "|")
