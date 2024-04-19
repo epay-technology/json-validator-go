@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 )
 
 type FieldCache struct {
@@ -20,11 +21,13 @@ type FieldCache struct {
 }
 
 type StructCache struct {
-	Cache map[reflect.Type]*FieldCache
+	Cache     map[reflect.Type]*FieldCache
+	rootLock  *sync.Mutex
+	typeLocks map[reflect.Type]*sync.Mutex
 }
 
 func newStructCache() *StructCache {
-	return &StructCache{Cache: map[reflect.Type]*FieldCache{}}
+	return &StructCache{Cache: map[reflect.Type]*FieldCache{}, rootLock: new(sync.Mutex)}
 }
 
 func (fieldCache *FieldCache) GetChildByName(name string) *FieldCache {
@@ -42,6 +45,17 @@ func (structCache *StructCache) Analyze(rulebook *Rulebook, targetType reflect.T
 	targetType = structCache.typeIndirect(targetType)
 
 	// If the type has already been analyzed, then fetch from the cache
+	// This is the code path for 99.9999% of requests.
+	if cache, present := structCache.Cache[targetType]; present {
+		return cache, nil
+	}
+
+	// Otherwise, it is the first time we see this struct, and therefor has to perform the actual analysis
+	lock := structCache.acquireTypeLock(targetType)
+	defer lock.Unlock()
+
+	// There might have been another concurrent analyze call to the struct cache for the same time,
+	// while we were waiting for the type lock. In this case we can skip the additional analysis and simply use the cache
 	if cache, present := structCache.Cache[targetType]; present {
 		return cache, nil
 	}
@@ -71,6 +85,22 @@ func (structCache *StructCache) Analyze(rulebook *Rulebook, targetType reflect.T
 	structCache.Cache[targetType] = root
 
 	return root, nil
+}
+
+func (structCache *StructCache) acquireTypeLock(targetType reflect.Type) *sync.Mutex {
+	// We first need the root lock, so we can get or create the required type lock without conflicts
+	structCache.rootLock.Lock()
+	defer structCache.rootLock.Unlock()
+
+	if typeLock, present := structCache.typeLocks[targetType]; present {
+		typeLock.Lock()
+		return typeLock
+	}
+
+	typeLock := new(sync.Mutex)
+	typeLock.Lock()
+
+	return typeLock
 }
 
 func (structCache *StructCache) typeIndirect(targetType reflect.Type) reflect.Type {
