@@ -181,9 +181,13 @@ func (validator *Validator) validateField(context *ValidationContext, validation
 
 func (validator *Validator) runRules(context *ValidationContext, validation *ErrorBag, rules []*RuleContext) bool {
 	errorsFound := false
+	validationContext := &FieldValidationContext{}
 
 	for _, rule := range rules {
-		if errorText, success := rule.Function(&FieldValidationContext{Validation: context, Params: rule.Params}); !success {
+		validationContext.Validation = context
+		validationContext.Params = rule.Params
+
+		if errorText, success := rule.Function(validationContext); !success {
 			errorsFound = true
 			validation.AddError(context.Json.Path, fmt.Sprintf("[%s]: %s", rule.Name, errorText))
 		}
@@ -227,7 +231,13 @@ func (validator *Validator) getJsonContextForIntegerKey(parentContext *Validatio
 }
 
 func (validator *Validator) getJsonContextForStringKey(parentContext *ValidationContext, key string) *JsonContext {
-	path := strings.TrimLeft(parentContext.Json.Path+"."+key, ".")
+	var path string
+
+	if parentContext.IsRoot() {
+		path = key
+	} else {
+		path = fmt.Sprintf("%s.%s", parentContext.Json.Path, key)
+	}
 
 	if !parentContext.IsRoot() && !parentContext.Json.KeyPresent {
 		return validator.getEmptyJsonContext(path)
