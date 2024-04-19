@@ -44,10 +44,6 @@ func (validator *Validator) Validate(jsonData []byte, dataTarget any) error {
 		return err
 	}
 
-	// Any errors at this point is not explicitly important.
-	// It is only important if the validation does not also find any problems
-	unmarshalErrors := json.Unmarshal(jsonData, dataTarget)
-
 	validation := newErrorBag()
 	context := &ValidationContext{
 		Json: &JsonContext{
@@ -72,8 +68,8 @@ func (validator *Validator) Validate(jsonData []byte, dataTarget any) error {
 	// If there was no validation errors, but still unmarshal errors
 	// Then our validation rules do not fully cover our API,
 	// and we fall back to returning the unmarshal errors
-	if unmarshalErrors != nil {
-		return unmarshalErrors
+	if err := json.Unmarshal(jsonData, dataTarget); err != nil {
+		return err
 	}
 
 	return nil
