@@ -16,6 +16,7 @@ type FieldCache struct {
 	ValidationTag *ValidationTag
 	IsStruct      bool
 	IsSlice       bool
+	IsMap         bool
 }
 
 type StructCache struct {
@@ -63,12 +64,13 @@ func (structCache *StructCache) Analyze(rulebook *Rulebook, targetType reflect.T
 		},
 		IsStruct: true,
 		IsSlice:  false,
+		IsMap:    false,
 	}
 
-	result := structCache.traverseType(root, rulebook)
-	structCache.Cache[targetType] = result
+	structCache.traverseType(root, rulebook)
+	structCache.Cache[targetType] = root
 
-	return result, nil
+	return root, nil
 }
 
 func (structCache *StructCache) typeIndirect(targetType reflect.Type) reflect.Type {
@@ -79,17 +81,17 @@ func (structCache *StructCache) typeIndirect(targetType reflect.Type) reflect.Ty
 	return targetType
 }
 
-func (structCache *StructCache) traverseType(parent *FieldCache, rulebook *Rulebook) *FieldCache {
+func (structCache *StructCache) traverseType(parent *FieldCache, rulebook *Rulebook) {
 	if parent.IsStruct {
 		structCache.traverseStruct(parent, rulebook)
 	} else if parent.IsSlice {
 		structCache.traverseSlice(parent, rulebook)
+	} else if parent.IsMap {
+		structCache.traverseMap(parent, rulebook)
 	}
-
-	return parent
 }
 
-func (structCache *StructCache) traverseStruct(parent *FieldCache, rulebook *Rulebook) *FieldCache {
+func (structCache *StructCache) traverseStruct(parent *FieldCache, rulebook *Rulebook) {
 	numFields := parent.Reflection.NumField()
 
 	for i := 0; i < numFields; i++ {
@@ -105,13 +107,32 @@ func (structCache *StructCache) traverseStruct(parent *FieldCache, rulebook *Rul
 			ValidationTag: structCache.getValidationTag(structField, rulebook),
 			IsStruct:      structCache.typeIsStruct(structType),
 			IsSlice:       structCache.typeIsSlice(structType),
+			IsMap:         structCache.typeIsMap(structType),
 		}
 
 		parent.Children = append(parent.Children, field)
 		structCache.traverseType(field, rulebook)
 	}
+}
 
-	return parent
+func (structCache *StructCache) traverseMap(parent *FieldCache, rulebook *Rulebook) {
+	sliceElem := structCache.typeIndirect(parent.Reflection)
+	mapSubType := structCache.typeIndirect(sliceElem.Elem())
+
+	field := &FieldCache{
+		Parent:        parent,
+		Children:      []*FieldCache{},
+		Reflection:    mapSubType,
+		JsonKey:       "{index}",
+		StructKey:     "{index}",
+		ValidationTag: newValidationTag(rulebook, ""),
+		IsStruct:      structCache.typeIsStruct(mapSubType),
+		IsSlice:       structCache.typeIsSlice(mapSubType),
+		IsMap:         structCache.typeIsMap(mapSubType),
+	}
+
+	parent.Children = append(parent.Children, field)
+	structCache.traverseType(field, rulebook)
 }
 
 func (structCache *StructCache) typeIsStruct(reflectType reflect.Type) bool {
@@ -122,6 +143,12 @@ func (structCache *StructCache) typeIsSlice(reflectType reflect.Type) bool {
 	kind := reflectType.Kind()
 
 	return kind == reflect.Slice || kind == reflect.Array
+}
+
+func (structCache *StructCache) typeIsMap(reflectType reflect.Type) bool {
+	kind := reflectType.Kind()
+
+	return kind == reflect.Map
 }
 
 func (structCache *StructCache) getJsonTagForStructField(field reflect.StructField) *JsonTag {
@@ -144,7 +171,7 @@ func (structCache *StructCache) getValidationTag(field reflect.StructField, rule
 	return newValidationTag(rulebook, tagline)
 }
 
-func (structCache *StructCache) traverseSlice(parent *FieldCache, rulebook *Rulebook) *FieldCache {
+func (structCache *StructCache) traverseSlice(parent *FieldCache, rulebook *Rulebook) {
 	sliceElem := structCache.typeIndirect(parent.Reflection)
 	sliceSubtype := structCache.typeIndirect(sliceElem.Elem())
 
@@ -157,10 +184,9 @@ func (structCache *StructCache) traverseSlice(parent *FieldCache, rulebook *Rule
 		ValidationTag: newValidationTag(rulebook, ""),
 		IsStruct:      structCache.typeIsStruct(sliceSubtype),
 		IsSlice:       structCache.typeIsSlice(sliceSubtype),
+		IsMap:         structCache.typeIsMap(sliceSubtype),
 	}
 
 	parent.Children = append(parent.Children, field)
 	structCache.traverseType(field, rulebook)
-
-	return parent
 }

@@ -306,3 +306,50 @@ func Test_it_can_analyse_nilable_arrays(t *testing.T) {
 	require.Len(t, fieldCache.Children[0].Children[0].Children, 1)
 	require.Len(t, fieldCache.Children[0].Children[0].Children[0].Children, 0)
 }
+
+func Test_it_can_analyse_maps(t *testing.T) {
+	// Arrange
+	validator := JsonValidator.New()
+	type child struct {
+		Id int `json:"id" validation:"required|integer"`
+	}
+
+	type simpleStruct struct {
+		Child1 map[string]child `json:"child1" validation:"nullable|object"`
+	}
+
+	// Act
+	var data simpleStruct
+	fieldCache, err := validator.Analyze(&data)
+
+	// Assert
+	require.NoError(t, err)
+
+	// Root
+	require.Len(t, fieldCache.Children, 1)
+	require.Equal(t, "", fieldCache.StructKey)
+	require.True(t, fieldCache.IsStruct)
+	require.False(t, fieldCache.IsSlice)
+	require.False(t, fieldCache.IsMap)
+
+	// Map
+	require.Len(t, fieldCache.Children[0].Children, 1)
+	require.Equal(t, "Child1", fieldCache.Children[0].StructKey)
+	require.False(t, fieldCache.Children[0].IsStruct)
+	require.False(t, fieldCache.Children[0].IsSlice)
+	require.True(t, fieldCache.Children[0].IsMap)
+
+	// struct
+	require.Len(t, fieldCache.Children[0].Children[0].Children, 1)
+	require.Equal(t, "{index}", fieldCache.Children[0].Children[0].StructKey)
+	require.True(t, fieldCache.Children[0].Children[0].IsStruct)
+	require.False(t, fieldCache.Children[0].Children[0].IsSlice)
+	require.False(t, fieldCache.Children[0].Children[0].IsMap)
+
+	// struct field
+	require.Len(t, fieldCache.Children[0].Children[0].Children[0].Children, 0)
+	require.Equal(t, "Id", fieldCache.Children[0].Children[0].Children[0].StructKey)
+	require.False(t, fieldCache.Children[0].Children[0].Children[0].IsStruct)
+	require.False(t, fieldCache.Children[0].Children[0].Children[0].IsSlice)
+	require.False(t, fieldCache.Children[0].Children[0].Children[0].IsMap)
+}
