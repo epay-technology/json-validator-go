@@ -124,7 +124,7 @@ func (validator *Validator) isReflectionOfArray(value reflect.Value) bool {
 
 func (validator *Validator) buildSliceEntryContext(parentContext *ValidationContext, fieldCache *FieldCache, index int) *ValidationContext {
 	return &ValidationContext{
-		Json:            validator.getJsonContext(parentContext, strconv.Itoa(index)),
+		Json:            validator.getJsonContextForIntegerKey(parentContext, index),
 		RootContext:     parentContext.RootContext,
 		ParentContext:   parentContext,
 		Field:           fieldCache,
@@ -194,7 +194,7 @@ func (validator *Validator) runRules(context *ValidationContext, validation *Err
 
 func (validator *Validator) buildFieldContext(parentContext *ValidationContext, fieldCache *FieldCache) *ValidationContext {
 	return &ValidationContext{
-		Json:            validator.getJsonContext(parentContext, fieldCache.JsonKey),
+		Json:            validator.getJsonContextForStringKey(parentContext, fieldCache.JsonKey),
 		RootContext:     parentContext.RootContext,
 		ParentContext:   parentContext,
 		Field:           fieldCache,
@@ -205,42 +205,44 @@ func (validator *Validator) buildFieldContext(parentContext *ValidationContext, 
 	}
 }
 
-func (validator *Validator) getJsonContext(parentContext *ValidationContext, key string) *JsonContext {
-	path := strings.TrimLeft(parentContext.Json.Path+"."+key, ".")
+func (validator *Validator) getJsonContextForIntegerKey(parentContext *ValidationContext, key int) *JsonContext {
+	path := fmt.Sprintf("%s.%d", parentContext.Json.Path, key)
 
 	if !parentContext.IsRoot() && !parentContext.Json.KeyPresent {
-		return &JsonContext{
-			Path:       path,
-			KeyPresent: false,
-			EmptyValue: true,
-			IsNull:     true,
-			Value:      nil,
-		}
+		return validator.getEmptyJsonContext(path)
 	}
 
 	// Handle array json values
 	jsonRawArray, validArrayJson := parentContext.Json.Value.([]any)
-	index, err := strconv.Atoi(key)
 
-	if validArrayJson {
-		if err == nil && len(jsonRawArray) > index {
-			return validator.buildJsonContextForValue(path, true, jsonRawArray[index])
-		}
+	if !validArrayJson {
+		return validator.getEmptyJsonContext(path)
+	}
 
+	if len(jsonRawArray) > key {
+		return validator.buildJsonContextForValue(path, true, jsonRawArray[key])
+	}
+
+	return validator.getEmptyJsonContext(path)
+}
+
+func (validator *Validator) getJsonContextForStringKey(parentContext *ValidationContext, key string) *JsonContext {
+	path := strings.TrimLeft(parentContext.Json.Path+"."+key, ".")
+
+	if !parentContext.IsRoot() && !parentContext.Json.KeyPresent {
 		return validator.getEmptyJsonContext(path)
 	}
 
 	// Handle object json values
 	jsonRawObject, validStructJson := parentContext.Json.Value.(map[string]any)
 
-	if validStructJson {
-		jsonValue, present := jsonRawObject[key]
-
-		return validator.buildJsonContextForValue(path, present, jsonValue)
+	if !validStructJson {
+		return validator.getEmptyJsonContext(path)
 	}
 
-	// Every other value type
-	return validator.getEmptyJsonContext(path)
+	jsonValue, present := jsonRawObject[key]
+
+	return validator.buildJsonContextForValue(path, present, jsonValue)
 }
 
 func (validator *Validator) buildJsonContextForValue(path string, present bool, jsonValue any) *JsonContext {
