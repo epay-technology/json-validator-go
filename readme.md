@@ -1,6 +1,10 @@
 # ePay JSON to struct validator
 With actual JSON validation included!
 
+```bash
+go get github.com/epay-technology/json-validator-go
+```
+
 This JSON validator operates differently from popular struct validators like [`gookit/validate`](https://github.com/gookit/validate) and [`go-playground/validator`](https://github.com/go-playground/validator). 
 **It validates JSON directly against a target data structure, rather than after unmarshalling**.
 
