@@ -87,6 +87,8 @@ func (validator *Validator) traverseField(context *ValidationContext, validation
 		validator.validateStructSubFields(context, validation)
 	} else if context.Field.IsSlice {
 		validator.validateSliceEntries(context, validation)
+	} else if context.Field.IsMap {
+		validator.validateMapEntries(context, validation)
 	}
 
 	// Do nothing
@@ -113,6 +115,27 @@ func (validator *Validator) validateSliceEntries(context *ValidationContext, val
 	}
 }
 
+func (validator *Validator) validateMapEntries(context *ValidationContext, validation *ErrorBag) {
+	jsonReflection := reflect.ValueOf(context.Json.Value)
+
+	// If the json value is not a map, then we cannot continue the traversal.
+	// Since there is no data left to validate.
+	// Other validation rules before this point should ensure that the type was an array and give an appropriate error
+	if jsonReflection.Kind() != reflect.Map {
+		return
+	}
+
+	mapKeys := jsonReflection.MapKeys()
+	sliceSubtype := context.Field.Children[0]
+
+	// TODO: Support diving
+	for _, key := range mapKeys {
+		// TODO: Support diving, so we can validate the entry itself, and not just the entry sub fields/entries
+		// This will validate the individual entries by ensuring any of its subfields has correct values.
+		validator.traverseField(validator.buildMapEntryContext(context, sliceSubtype, key.String()), validation)
+	}
+}
+
 func (validator *Validator) isReflectionOfArray(value reflect.Value) bool {
 	switch value.Kind() {
 	case reflect.Slice, reflect.Array:
@@ -123,13 +146,34 @@ func (validator *Validator) isReflectionOfArray(value reflect.Value) bool {
 }
 
 func (validator *Validator) buildSliceEntryContext(parentContext *ValidationContext, fieldCache *FieldCache, index int) *ValidationContext {
+	stringKey := strconv.Itoa(index)
+
 	return &ValidationContext{
 		Json:            validator.getJsonContextForIntegerKey(parentContext, index),
 		RootContext:     parentContext.RootContext,
 		ParentContext:   parentContext,
 		Field:           fieldCache,
-		FieldName:       strconv.Itoa(index),
-		StructFieldName: strconv.Itoa(index),
+		FieldName:       stringKey,
+		StructFieldName: stringKey,
+		// The Validation tag does not really matter, since we are never validation this exact context
+		// We are only using it as a parent context when validating an entry within a slice.
+		ValidationTag: &ValidationTag{
+			Rules:              []*RuleContext{},
+			ExplicitlyNullable: false,
+			PresenceRules:      []*RuleContext{},
+		},
+		Validator: parentContext.Validator,
+	}
+}
+
+func (validator *Validator) buildMapEntryContext(parentContext *ValidationContext, fieldCache *FieldCache, key string) *ValidationContext {
+	return &ValidationContext{
+		Json:            validator.getJsonContextForStringKey(parentContext, key),
+		RootContext:     parentContext.RootContext,
+		ParentContext:   parentContext,
+		Field:           fieldCache,
+		FieldName:       key,
+		StructFieldName: key,
 		// The Validation tag does not really matter, since we are never validation this exact context
 		// We are only using it as a parent context when validating an entry within a slice.
 		ValidationTag: &ValidationTag{
