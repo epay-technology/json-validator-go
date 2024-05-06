@@ -88,7 +88,7 @@ func Test_it_does_not_fails_requireWithAll_for_present_fields_when_one_sibling_i
 	require.Equal(t, 0, errorBag.CountErrors())
 }
 
-func Test_it_fails_requireWithAll_for_null_fields_when_all_sibling_is_present(t *testing.T) {
+func Test_it_does_not_fail_requireWithAll_for_null_fields_when_all_sibling_is_present(t *testing.T) {
 	// Arrange
 	var errorBag *JsonValidator.ErrorBag
 	jsonString := []byte(`{"Sibling1": null, "Sibling2": null, "Data": null}`)
@@ -104,9 +104,8 @@ func Test_it_fails_requireWithAll_for_null_fields_when_all_sibling_is_present(t 
 	_ = errors.As(err, &errorBag)
 
 	// Assert
-	require.Error(t, err)
-	require.True(t, errorBag.HasFailedKeyAndRule("Data", "requiredWithAll"))
-	require.Equal(t, 1, errorBag.CountErrors())
+	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
 }
 
 func Test_it_does_not_fail_requireWithAll_for_zero_value_for_int(t *testing.T) {

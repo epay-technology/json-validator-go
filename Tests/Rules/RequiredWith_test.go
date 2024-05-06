@@ -7,10 +7,29 @@ import (
 	"testing"
 )
 
-func Test_it_fails_requireWith_for_not_present_fields_when_sibling_is_there(t *testing.T) {
+func Test_it_does_not_fail_requireWith_for_not_present_fields_when_sibling_is_there_and_null(t *testing.T) {
 	// Arrange
 	var errorBag *JsonValidator.ErrorBag
 	jsonString := []byte(`{"Sibling": null}`)
+	type testData struct {
+		Data    int `validation:"requiredWith:Sibling"`
+		Sibling any
+	}
+
+	// Act
+	var data testData
+	err := JsonValidator.New().Validate(jsonString, &data)
+	_ = errors.As(err, &errorBag)
+
+	// Assert
+	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
+}
+
+func Test_it_fails_requireWith_for_not_present_fields_when_sibling_is_there_and_not_null(t *testing.T) {
+	// Arrange
+	var errorBag *JsonValidator.ErrorBag
+	jsonString := []byte(`{"Sibling": true}`)
 	type testData struct {
 		Data    int `validation:"requiredWith:Sibling"`
 		Sibling any
@@ -46,10 +65,29 @@ func Test_it_does_not_fails_requireWith_for_present_fields_when_sibling_is_there
 	require.Equal(t, 0, errorBag.CountErrors())
 }
 
-func Test_it_fails_requireWith_for_null_fields_when_sibling_is_present(t *testing.T) {
+func Test_it_does_not_fail_requireWith_for_null_fields_when_sibling_is_present_and_null(t *testing.T) {
 	// Arrange
 	var errorBag *JsonValidator.ErrorBag
 	jsonString := []byte(`{"Sibling": null, "Data": null}`)
+	type testData struct {
+		Data    int `validation:"requiredWith:Sibling"`
+		Sibling any
+	}
+
+	// Act
+	var data testData
+	err := JsonValidator.New().Validate(jsonString, &data)
+	_ = errors.As(err, &errorBag)
+
+	// Assert
+	require.NoError(t, err)
+	require.Equal(t, 0, errorBag.CountErrors())
+}
+
+func Test_it_fails_requireWith_for_null_fields_when_sibling_is_present_and_not_null(t *testing.T) {
+	// Arrange
+	var errorBag *JsonValidator.ErrorBag
+	jsonString := []byte(`{"Sibling": false, "Data": null}`)
 	type testData struct {
 		Data    int `validation:"requiredWith:Sibling"`
 		Sibling any

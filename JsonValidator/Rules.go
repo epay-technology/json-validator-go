@@ -67,7 +67,7 @@ var presenceRules = []string{
 
 func requiredWith(context *FieldValidationContext) (string, bool) {
 	siblingNames := []string{context.Params[0]}
-	neighborExists := isNeighborsPresent(context, siblingNames, true)
+	neighborExists := isNeighborsPresentAndNotNull(context, siblingNames, true)
 
 	if !neighborExists {
 		return "", true
@@ -88,7 +88,7 @@ func nullable(context *FieldValidationContext) (string, bool) {
 
 func requiredWithAny(context *FieldValidationContext) (string, bool) {
 	siblingNames := context.Params
-	neighborExists := isNeighborsPresent(context, siblingNames, false)
+	neighborExists := isNeighborsPresentAndNotNull(context, siblingNames, false)
 
 	if !neighborExists {
 		return "", true
@@ -105,7 +105,7 @@ func requiredWithAny(context *FieldValidationContext) (string, bool) {
 
 func requiredWithAll(context *FieldValidationContext) (string, bool) {
 	siblingNames := context.Params
-	allNeighborsPresent := isNeighborsPresent(context, siblingNames, true)
+	allNeighborsPresent := isNeighborsPresentAndNotNull(context, siblingNames, true)
 
 	if !allNeighborsPresent {
 		return "", true
@@ -122,7 +122,7 @@ func requiredWithAll(context *FieldValidationContext) (string, bool) {
 
 func requiredWithout(context *FieldValidationContext) (string, bool) {
 	siblingNames := []string{context.Params[0]}
-	neighborExists := isNeighborsPresent(context, siblingNames, true)
+	neighborExists := isNeighborsPresentAndNotNull(context, siblingNames, true)
 
 	if neighborExists {
 		return "", true
@@ -139,7 +139,7 @@ func requiredWithout(context *FieldValidationContext) (string, bool) {
 
 func requiredWithoutAny(context *FieldValidationContext) (string, bool) {
 	siblingNames := context.Params
-	allNeighborsArePresent := isNeighborsPresent(context, siblingNames, true)
+	allNeighborsArePresent := isNeighborsPresentAndNotNull(context, siblingNames, true)
 
 	if allNeighborsArePresent {
 		return "", true
@@ -156,7 +156,7 @@ func requiredWithoutAny(context *FieldValidationContext) (string, bool) {
 
 func requiredWithoutAll(context *FieldValidationContext) (string, bool) {
 	siblingNames := context.Params
-	anyNeighborIsPresent := isNeighborsPresent(context, siblingNames, false)
+	anyNeighborIsPresent := isNeighborsPresentAndNotNull(context, siblingNames, false)
 
 	if anyNeighborIsPresent {
 		return "", true
@@ -171,7 +171,7 @@ func requiredWithoutAll(context *FieldValidationContext) (string, bool) {
 	return fmt.Sprintf("Is required when all of [%s] is not present", strings.Join(siblingJsonKeys, ",")), false
 }
 
-func isNeighborsPresent(context *FieldValidationContext, fields []string, all bool) bool {
+func isNeighborsPresentAndNotNull(context *FieldValidationContext, fields []string, all bool) bool {
 	isAllPresent := true
 
 	for _, field := range fields {
@@ -181,7 +181,7 @@ func isNeighborsPresent(context *FieldValidationContext, fields []string, all bo
 			panic(fmt.Sprintf("No such field within struct: %s - Remember: Cross field references must use the struct name, and not the json name", field))
 		}
 
-		fieldPresent := ok && neighbor.Json.KeyPresent
+		fieldPresent := ok && neighbor.Json.KeyPresent && !neighbor.Json.IsNull
 		isAllPresent = isAllPresent && fieldPresent
 
 		// When we want to know all fields are present but one is not
