@@ -227,7 +227,7 @@ func (validator *Validator) runRules(context *ValidationContext, validation *Err
 	errorsFound := false
 
 	for _, rule := range rules {
-		if errorText, success := rule.Function(&FieldValidationContext{Validation: context, Params: rule.Params}); !success {
+		if errorText, success := rule.Function(&FieldValidationContext{Validation: context, Params: rule.Params, RuleName: rule.Name}); !success {
 			errorsFound = true
 			validation.AddError(context.Json.Path, fmt.Sprintf("[%s]: %s", rule.Name, errorText))
 		}

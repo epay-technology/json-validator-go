@@ -5,6 +5,7 @@ import "strconv"
 type FieldValidationContext struct {
 	Validation *ValidationContext
 	Params     []string
+	RuleName   string
 }
 
 func (context *FieldValidationContext) GetParam(index int) string {

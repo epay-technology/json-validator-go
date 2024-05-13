@@ -61,6 +61,7 @@ func main() {
 | `requiredWithoutAny:{x},{z},...` | The field key must be both present in the JSON and have a non-null value if any of the sibling fields `{x},{z},...` is not present. |
 | `requiredWithAll:{x},{z},...`    | The field key must be both present in the JSON and have a non-null value if all of the sibling fields `{x},{z},...` is present.     |
 | `requiredWithoutAll:{x},{z},...` | The field key must be both present in the JSON and have a non-null value if all of the sibling fields `{x},{z},...` is not present. |
+| `requireOneInGroup:{groupName}`  | Exactly one field with the `{groupName}` must be present and have a non-null value                                                  |
 | `present`                        | The field key must be present in the JSON.                                                                                          |
 | `len:{n}`                        | Checks value is countable and length is exactly `{n}` (`string`, `array`, `object`)                                                 |
 | `lenMax:{n}`                     | Checks value is countable and length is at most `{n}` (`string`, `array`, `object`)                                                 |

@@ -24,6 +24,7 @@ var rules = map[string]RuleFunction{
 	"requiredWithoutAny": requiredWithoutAny,
 	"requiredWithAll":    requiredWithAll,
 	"requiredWithoutAll": requiredWithoutAll,
+	"requireOneInGroup":  requireOneInGroup,
 	"array":              isArray,
 	"object":             isObject,
 	"string":             isString,
@@ -63,6 +64,7 @@ var presenceRules = []string{
 	"requiredWithout",
 	"requiredWithoutAny",
 	"requiredWithoutAll",
+	"requireOneInGroup",
 }
 
 func requiredWith(context *FieldValidationContext) (string, bool) {
@@ -213,6 +215,47 @@ func getNeighborJsonKeys(context *FieldValidationContext, fields []string) []str
 			names = append(names, field)
 		} else {
 			names = append(names, neighbor.FieldName)
+		}
+	}
+
+	return names
+}
+
+func requireOneInGroup(context *FieldValidationContext) (string, bool) {
+	siblingNames := extractSiblingNamesByGroup(context, context.Params[0])
+	anyNeighborIsPresent := isNeighborsPresentAndNotNull(context, siblingNames, false)
+	_, isSelfPresent := required(context)
+
+	// If only the current field is present and valid - Then OK
+	if isSelfPresent && !anyNeighborIsPresent {
+		return "", true
+	}
+
+	// If the current field is not present, but any neighbor is valid - Then OK
+	if !isSelfPresent && anyNeighborIsPresent {
+		return "", true
+	}
+
+	siblingJsonKeys := append(getNeighborJsonKeys(context, siblingNames), context.Validation.FieldName)
+
+	return fmt.Sprintf("Exactly one of [%s] is expected to be present and non-null", strings.Join(siblingJsonKeys, ",")), false
+}
+
+func extractSiblingNamesByGroup(context *FieldValidationContext, groupName string) []string {
+	var names []string
+
+	for _, child := range context.Validation.ParentContext.Field.Children {
+		// Ignore self
+		if child.StructKey == context.Validation.Field.StructKey {
+			continue
+		}
+
+		rules := child.ValidationTag.GetRules(context.RuleName)
+
+		for _, rule := range rules {
+			if rule.Params[0] == groupName {
+				names = append(names, child.StructKey)
+			}
 		}
 	}
 

@@ -47,3 +47,21 @@ func newValidationTag(rulebook *Rulebook, tagline string) *ValidationTag {
 		ExplicitlyNullable: explicitNullable,
 	}
 }
+
+func (tag *ValidationTag) GetRules(name string) []*RuleContext {
+	var rules []*RuleContext
+
+	for _, ruleInstance := range tag.Rules {
+		if ruleInstance.Name == name {
+			rules = append(rules, ruleInstance)
+		}
+	}
+
+	for _, ruleInstance := range tag.PresenceRules {
+		if ruleInstance.Name == name {
+			rules = append(rules, ruleInstance)
+		}
+	}
+
+	return rules
+}
