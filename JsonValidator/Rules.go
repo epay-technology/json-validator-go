@@ -467,9 +467,7 @@ func isJson(context *FieldValidationContext) (string, bool) {
 		return errorMessage, false
 	}
 
-	var decodedJson json.RawMessage
-
-	return errorMessage, json.Unmarshal([]byte(fieldValue), &decodedJson) == nil
+	return errorMessage, json.Valid([]byte(fieldValue))
 }
 
 func matchesRegex(context *FieldValidationContext) (string, bool) {
