@@ -225,6 +225,12 @@ func requireOneInGroup(context *FieldValidationContext) (string, bool) {
 	siblingNames := extractSiblingNamesByGroup(context, context.Params[0])
 	anyNeighborIsPresent := isNeighborsPresentAndNotNull(context, siblingNames, false)
 	_, isSelfPresent := required(context)
+	isGroupOfOne := len(siblingNames) == 0
+
+	// Group of one
+	if isSelfPresent && isGroupOfOne {
+		return "", true
+	}
 
 	// If only the current field is present and valid - Then OK
 	if isSelfPresent && !anyNeighborIsPresent {
@@ -232,7 +238,7 @@ func requireOneInGroup(context *FieldValidationContext) (string, bool) {
 	}
 
 	// If the current field is not present, but any neighbor is valid - Then OK
-	if !isSelfPresent && anyNeighborIsPresent {
+	if !isSelfPresent && anyNeighborIsPresent && !isGroupOfOne {
 		return "", true
 	}
 
