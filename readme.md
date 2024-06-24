@@ -74,7 +74,8 @@ func main() {
 | `float`                          | Checks value is a `float`                                                                                                           |
 | `bool/boolean`                   | Checks value is a `boolean`                                                                                                         |
 | `in:{a},{b},...`                 | Checks that the value is within the the list `{a},{b},...`                                                                          |
-| `uuid`                           | Checks that the value is an UUID string.                                                                                            |
+| `uuid`                           | Checks that the value is a valid non-zero UUID string.                                                                              |
+| `zeroableUuid`                   | Checks that the value is any valid UUID string.                                                                                     |
 | `regex:{x}`                      | Checks that the value is a string that is matched by the `{x}` regex definition                                                     |
 | `between:{x},{z}`                | Checks that the value is a number between `{x}` and `{z}` inclusively                                                               |
 | `min:{x}`                        | Checks that the value is a number greater than or equal to `{x}`                                                                    |

@@ -33,6 +33,7 @@ var rules = map[string]RuleFunction{
 	"bool":               isBool,
 	"in":                 isIn,
 	"uuid":               isUuid,
+	"zeroableUuid":       isZeroableUuid,
 	"regex":              matchesRegex,
 	"between":            isBetween,
 	"min":                isMin,
@@ -434,6 +435,21 @@ func isIn(context *FieldValidationContext) (string, bool) {
 
 func isUuid(context *FieldValidationContext) (string, bool) {
 	errorMessage := "Must be a valid uuid string"
+
+	// The standard uuid rule does not allow the zero uuid.
+	// The reason for this is that the zero uuid is rarely used in practice and is the default value of the google uuid package
+	// meaning forgetting to set a specific value will fallback to the zero uuid. Which is often a bug and not intended.
+	// To allow the zero uuid, instead use the alternative zeroableUuid rule.
+	fieldValue, isString := context.Validation.Json.Value.(string)
+	if isString && fieldValue == "00000000-0000-0000-0000-000000000000" {
+		return errorMessage, false
+	}
+
+	return errorMessage, verifyRegex(context, "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+}
+
+func isZeroableUuid(context *FieldValidationContext) (string, bool) {
+	errorMessage := "Must be a valid uuid string and not the zero uuid"
 
 	return errorMessage, verifyRegex(context, "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 }

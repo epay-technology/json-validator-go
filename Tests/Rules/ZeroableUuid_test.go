@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func Test_it_can_validate_using_uuid_rule(t *testing.T) {
+func Test_it_can_validate_using_zeroable_uuid_rule(t *testing.T) {
 	// Setup
 	cases := []struct {
 		jsonString []byte
@@ -24,7 +24,7 @@ func Test_it_can_validate_using_uuid_rule(t *testing.T) {
 		{[]byte(`{"Data": "1146b96b-165c-720a-a684-5715cc398edc"}`), false},
 		{[]byte(`{"Data": "d3ff5fc7-dc51-81ec-9c94-2cb093d74090"}`), false},
 		{[]byte(`{"Data": "2bd93de8-1989-9af8-9518-a378acbdc9c2"}`), false},
-		{[]byte(`{"Data": "00000000-0000-0000-0000-000000000000"}`), true},
+		{[]byte(`{"Data": "00000000-0000-0000-0000-000000000000"}`), false},
 		{[]byte(`{"Data": "d-00000000-0000-0000-0000-000000000000"}`), true},
 		{[]byte(`{"Data": "00000000-0000-0000-0000-000000000000-a"}`), true},
 		{[]byte(`{"Data": "d-00000000-0000-0000-0000-000000000000-a"}`), true},
@@ -40,7 +40,7 @@ func Test_it_can_validate_using_uuid_rule(t *testing.T) {
 	}
 
 	type testData struct {
-		Data any `validation:"uuid"`
+		Data any `validation:"zeroableUuid"`
 	}
 
 	for i, testCase := range cases {
@@ -56,7 +56,7 @@ func Test_it_can_validate_using_uuid_rule(t *testing.T) {
 			// Assert
 			if testCase.shouldFail {
 				require.True(t, errorBag != nil)
-				require.True(t, errorBag.HasFailedKeyAndRule("Data", "uuid"))
+				require.True(t, errorBag.HasFailedKeyAndRule("Data", "zeroableUuid"))
 				require.Equal(t, 1, errorBag.CountErrors())
 			} else {
 				require.True(t, errorBag == nil)
