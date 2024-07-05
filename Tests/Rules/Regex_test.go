@@ -14,10 +14,10 @@ func Test_it_can_validate_using_regex_rule(t *testing.T) {
 		jsonString []byte
 		shouldFail bool
 	}{
-		{[]byte(`{"Data": "123-456"}`), false},
-		{[]byte(`{"Data": "12a3-4b56"}`), false},
-		{[]byte(`{"Data": "a123-456b"}`), false},
-		{[]byte(`{"Data": " a123-456b "}`), false},
+		{[]byte(`{"Data": "123456"}`), false},
+		{[]byte(`{"Data": "abcdef"}`), false},
+		{[]byte(`{"Data": "1a2b3c"}`), false},
+		{[]byte(`{"Data": "ABC321"}`), false},
 		{[]byte(`{"Data": "a123-b456"}`), true},
 		{[]byte(`{"Data": "dsada56dsadas-dsadas561dsada"}`), true},
 		{[]byte(`{"Data": {}}`), true},
@@ -29,11 +29,11 @@ func Test_it_can_validate_using_regex_rule(t *testing.T) {
 	}
 
 	type testData struct {
-		Data any `validation:"regex:\\d+-\\d+"`
+		Data any `validation:"regex:^[a-zA-Z0-9]{1,10}$"`
 	}
 
 	for i, testCase := range cases {
-		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Test: #%d", i), func(t *testing.T) {
 			// Arrange
 			var errorBag *JsonValidator.ErrorBag
 

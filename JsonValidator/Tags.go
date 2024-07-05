@@ -1,6 +1,8 @@
 package JsonValidator
 
-import "strings"
+import (
+	"strings"
+)
 
 type JsonTag struct {
 	JsonKey string
