@@ -613,6 +613,7 @@ func lenHelper(context *FieldValidationContext, min *int, max *int) (string, boo
 	}
 
 	actualLen := valueType.Len()
+	errorText = fmt.Sprintf("%s - Actual length: %d", errorText, actualLen)
 
 	if min != nil && *min > actualLen {
 		return errorText, false
