@@ -493,8 +493,7 @@ func isJson(context *FieldValidationContext) (string, bool) {
 }
 
 func matchesRegex(context *FieldValidationContext) (string, bool) {
-	regexString := context.Params[0]
-
+	regexString := strings.Join(context.Params, ",")
 	errorMessage := fmt.Sprintf("Must be a string matching regex: %s", regexString)
 
 	return errorMessage, verifyRegex(context, regexString)

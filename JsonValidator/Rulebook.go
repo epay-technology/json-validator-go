@@ -76,10 +76,6 @@ func (rulebook Rulebook) parseRuleDefinition(ruleDefinition string) (string, []s
 
 	if len(split) > 1 {
 		params = strings.Split(split[1], ",")
-
-		if name == "regex" {
-			params = []string{split[1]}
-		}
 	}
 
 	return name, params
