@@ -419,7 +419,7 @@ func isIn(context *FieldValidationContext) (string, bool) {
 	errorMessage := fmt.Sprintf("Value must be in set: [%s]", strings.Join(context.Params, ", "))
 
 	if context.Validation.Json.IsNull {
-		return fmt.Sprintf("%s - [NULL] given"), false
+		return fmt.Sprintf("%s - [NULL] given", errorMessage), false
 	}
 
 	// Extract the actual value from the json
