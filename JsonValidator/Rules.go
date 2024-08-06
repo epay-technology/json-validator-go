@@ -418,21 +418,34 @@ func isIn(context *FieldValidationContext) (string, bool) {
 	var actualValue string
 	errorMessage := fmt.Sprintf("Value must be in set: [%s]", strings.Join(context.Params, ", "))
 
-	if context.Validation.Json.IsNull || !context.Validation.Json.KeyPresent {
-		return errorMessage, false
+	if context.Validation.Json.IsNull {
+		return fmt.Sprintf("%s - [NULL] given"), false
 	}
 
+	// Extract the actual value from the json
 	if value, isInt := context.Validation.Json.Value.(int); isInt {
 		actualValue = strconv.Itoa(value)
 	} else if value, isFloat := context.Validation.Json.Value.(float64); isFloat {
-		actualValue = fmt.Sprintf("%d", int(value))
+		actualValue = strings.TrimRight(fmt.Sprintf("%f", value), "0.")
 	} else if value, isString := context.Validation.Json.Value.(string); isString {
 		actualValue = value
-	} else {
-		return errorMessage, false
+	} else if value, isString := context.Validation.Json.Value.(bool); isString {
+		actualValue = strconv.FormatBool(value)
 	}
 
-	return errorMessage, slices.Contains(context.Params, actualValue)
+	// Verify the found value
+	if actualValue != "" {
+		return fmt.Sprintf("%s - [%s] given", errorMessage, actualValue), slices.Contains(context.Params, actualValue)
+	}
+
+	// If no value was found, we then try to locate the type to give a more informative error
+	if _, isObject := context.Validation.Json.Value.(map[string]any); isObject {
+		return fmt.Sprintf("%s - Object given", errorMessage), false
+	} else if _, isArray := context.Validation.Json.Value.([]any); isArray {
+		return fmt.Sprintf("%s - Array given", errorMessage), false
+	} else {
+		return fmt.Sprintf("%s - Incompatiable type given", errorMessage), false
+	}
 }
 
 func isUuid(context *FieldValidationContext) (string, bool) {
