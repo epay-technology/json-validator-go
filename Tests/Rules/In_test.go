@@ -19,6 +19,7 @@ func Test_it_can_validate_using_in_rule(t *testing.T) {
 		{[]byte(`{"Data": 45.12}`), false},
 		{[]byte(`{"Data": "abc"}`), false},
 		{[]byte(`{"Data": false}`), false},
+		{[]byte(`{"Data": ""}`), false},
 		{[]byte(`{"Data": "hello world"}`), true},
 		{[]byte(`{"Data": "ab"}`), true},
 		{[]byte(`{"Data": "bc"}`), true},
@@ -36,7 +37,7 @@ func Test_it_can_validate_using_in_rule(t *testing.T) {
 	}
 
 	type testData struct {
-		Data any `validation:"in:abc,123,45.12,false"`
+		Data any `validation:"in:abc,123,45.12,false,"`
 	}
 
 	for i, testCase := range cases {

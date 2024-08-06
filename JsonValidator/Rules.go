@@ -422,6 +422,8 @@ func isIn(context *FieldValidationContext) (string, bool) {
 		return fmt.Sprintf("%s - [NULL] given", errorMessage), false
 	}
 
+	valueFound := true
+
 	// Extract the actual value from the json
 	if value, isInt := context.Validation.Json.Value.(int); isInt {
 		actualValue = strconv.Itoa(value)
@@ -431,10 +433,12 @@ func isIn(context *FieldValidationContext) (string, bool) {
 		actualValue = value
 	} else if value, isString := context.Validation.Json.Value.(bool); isString {
 		actualValue = strconv.FormatBool(value)
+	} else {
+		valueFound = false
 	}
 
 	// Verify the found value
-	if actualValue != "" {
+	if valueFound {
 		return fmt.Sprintf("%s - [%s] given", errorMessage, actualValue), slices.Contains(context.Params, actualValue)
 	}
 
