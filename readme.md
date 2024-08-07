@@ -83,3 +83,4 @@ func main() {
 | `url`                            | Checks that the value is a non-empty URL string                                                                                                              |
 | `ip`                             | Checks that the value is a non-empty IP string                                                                                                               |
 | `email`                          | Checks that the value is a non-empty email string                                                                                                            |
+| `json`                           | Checks that the value is a valid json string                                                                                                                 |
