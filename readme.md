@@ -1,56 +1,71 @@
 # ePay JSON to struct validator
+
 With actual JSON validation included!
 
 ```bash
 go get github.com/epay-technology/json-validator-go
 ```
 
-This JSON validator operates differently from popular struct validators like [`gookit/validate`](https://github.com/gookit/validate) and [`go-playground/validator`](https://github.com/go-playground/validator). 
+This JSON validator operates differently from popular struct validators like [
+`gookit/validate`](https://github.com/gookit/validate) and [
+`go-playground/validator`](https://github.com/go-playground/validator).
 **It validates JSON directly against a target data structure, rather than after unmarshalling**.
 
-The validator distinguishes between a missing key and a given value with a data type's default zero value. 
-This redefines the semantics of the `required` validation rule and introduces the new rule `present`. 
-In traditional struct validators, `required` means "not the data type's default zero value" 
+The validator distinguishes between a missing key and a given value with a data type's default zero value.
+This redefines the semantics of the `required` validation rule and introduces the new rule `present`.
+In traditional struct validators, `required` means "not the data type's default zero value"
 but in this JSON validator, it means "the key exists in JSON and the value is not null."
 
 This allows requiring a field from a client while permitting the data type's default zero value.
 
 ## Advantages over Traditional Struct Validators
-### Better Handling of Invalid Value Types
-Traditional struct validators struggle to handle cases where the JSON value type doesn't match the struct field type. 
-For instance, if a struct requires an integer but receives a string in the JSON, the default Go JSON unmarshaler would return a generic error, making it hard for struct validators to inform the client about the mismatch. 
-Consequently, these validators often return a generic error code 400 with a vague message like "invalid payload," leaving clients unsure how to correct their code.
 
-In contrast, the JsonValidator enables APIs to return more informative error responses. 
-By validating the JSON directly, it allows for precise error messages, such as returning a 422 status code with a validation error stating "The field must be an integer." 
+### Better Handling of Invalid Value Types
+
+Traditional struct validators struggle to handle cases where the JSON value type doesn't match the struct field type.
+For instance, if a struct requires an integer but receives a string in the JSON, the default Go JSON unmarshaler would
+return a generic error, making it hard for struct validators to inform the client about the mismatch.
+Consequently, these validators often return a generic error code 400 with a vague message like "invalid payload,"
+leaving clients unsure how to correct their code.
+
+In contrast, the JsonValidator enables APIs to return more informative error responses.
+By validating the JSON directly, it allows for precise error messages, such as returning a 422 status code with a
+validation error stating "The field must be an integer."
 This clarity empowers clients to align their code with API specifications more effectively.
 
 ### Introduction of the "Present" Rule
-Another significant benefit is the introduction of the "present" rule, which is not feasible with traditional struct validators. 
-This rule mandates that a field must be present within the JSON, ensuring that clients send values for all required fields rather than relying on the default zero values of Go struct data types.
 
-This capability enables APIs to differentiate between a client not sending any value and a client intentionally sending the default zero value. 
-Consequently, it allows for scenarios where numeric fields can accept values like 0 while enforcing the requirement for clients to provide explicit values.
+Another significant benefit is the introduction of the "present" rule, which is not feasible with traditional struct
+validators.
+This rule mandates that a field must be present within the JSON, ensuring that clients send values for all required
+fields rather than relying on the default zero values of Go struct data types.
+
+This capability enables APIs to differentiate between a client not sending any value and a client intentionally sending
+the default zero value.
+Consequently, it allows for scenarios where numeric fields can accept values like 0 while enforcing the requirement for
+clients to provide explicit values.
 
 ## Usage
+
 ```go
 type MyRequest struct {
-    Id string `json:"id" validation:"required|string|uuid"` // Id must be present with non-null uuid string
-    User *User `json:"user" validation:"required|object"`   // User must be present with non-null object value
+Id string `json:"id" validation:"required|string|uuid"` // Id must be present with non-null uuid string
+User *User `json:"user" validation:"required|object"`   // User must be present with non-null object value
 }
 
 type User struct {
-    Name *string `json:"name" validation:"present|nullable|lenMax:255"` // Name must be present, but can be null or a string with a maximum length of 255 chars
+Name *string `json:"name" validation:"present|nullable|lenMax:255"` // Name must be present, but can be null or a string with a maximum length of 255 chars
 }
 
 func main() {
-    jsonBytes := (...)
-    
-    myRequest, err := JsonValidator.Validate[MyRequest](jsonBytes)
+jsonBytes := (...)
+
+myRequest, err := JsonValidator.Validate[MyRequest](jsonBytes)
 }
 ```
 
 # Rules
+
 | Name                             | Description                                                                                                                                                  |
 |----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `nullable/nilable`               | Explicitly allows the field to be nullable. <br/>(Disables other validation rules when value is null)                                                        |
@@ -84,3 +99,4 @@ func main() {
 | `ip`                             | Checks that the value is a non-empty IP string                                                                                                               |
 | `email`                          | Checks that the value is a non-empty email string                                                                                                            |
 | `json`                           | Checks that the value is a valid json string                                                                                                                 |
+| `alpha3Currency`                 | Checks that the value is a valid alpha-3 currency code                                                                                                       |
