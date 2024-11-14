@@ -140,8 +140,13 @@ func (structCache *StructCache) traverseStruct(parent *FieldCache, rulebook *Rul
 			IsMap:         structCache.typeIsMap(structType),
 		}
 
-		parent.Children = append(parent.Children, field)
 		structCache.traverseType(field, rulebook)
+
+		if structField.Anonymous { // Embedded fields are a part of the parent type itself
+			parent.Children = append(parent.Children, field.Children...)
+		} else {
+			parent.Children = append(parent.Children, field)
+		}
 	}
 }
 
