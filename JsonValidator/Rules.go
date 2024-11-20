@@ -20,6 +20,14 @@ var rules = map[string]RuleFunction{
 	"lenMin":             lenMin,
 	"lenMax":             lenMax,
 	"lenBetween":         lenBetween,
+	"missingIf":          missingIf,
+	"missingUnless":      missingUnless,
+	"missingWith":        missingWith,
+	"missingWithAny":     missingWithAny,
+	"missingWithAll":     missingWithAll,
+	"missingWithout":     missingWithout,
+	"missingWithoutAll":  missingWithoutAll,
+	"missingWithoutAny":  missingWithoutAny,
 	"requiredWith":       requiredWith,
 	"requiredWithout":    requiredWithout,
 	"requiredWithAny":    requiredWithAny,
@@ -70,6 +78,169 @@ var presenceRules = []string{
 	"requiredWithoutAny",
 	"requiredWithoutAll",
 	"requireOneInGroup",
+	"missingIf",
+	"missingUnless",
+	"missingWith",
+	"missingWithAny",
+	"missingWithAll",
+	"missingWithout",
+	"missingWithoutAll",
+	"missingWithoutAny",
+}
+
+func missingIf(context *FieldValidationContext) (string, bool) {
+	sibling := context.Params[0]
+	expectedSiblingValue := context.Params[1]
+
+	neighbor, ok := context.Validation.GetNeighborField(sibling)
+	if !ok {
+		return "", true
+	}
+
+	actualValue, valueFound := castValueToString(neighbor.Json.Value)
+	if !valueFound {
+		return "", true
+	}
+
+	if actualValue != expectedSiblingValue {
+		return "", true
+	}
+
+	if _, presentOk := present(context); !presentOk {
+		return "", true
+	}
+
+	return fmt.Sprintf("Must not be present when [%s] has value [%s]", neighbor.FieldName, expectedSiblingValue), false
+}
+
+func missingUnless(context *FieldValidationContext) (string, bool) {
+	sibling := context.Params[0]
+	expectedSiblingValue := context.Params[1]
+
+	neighbor, ok := context.Validation.GetNeighborField(sibling)
+	if !ok {
+		panic(fmt.Sprintf("No such field within struct: %s - Remember: Cross field references must use the struct name, and not the json name", sibling))
+	}
+
+	message := fmt.Sprintf("Must not be present unless [%s] has value [%s]", neighbor.FieldName, expectedSiblingValue)
+
+	actualValue, valueFound := castValueToString(neighbor.Json.Value)
+	if !valueFound {
+		_, presentOk := present(context)
+		return message, !presentOk
+	}
+
+	if actualValue == expectedSiblingValue {
+		return "", true
+	}
+
+	if _, presentOk := present(context); !presentOk {
+		return "", true
+	}
+
+	return fmt.Sprintf("Must not be present unless [%s] has value [%s]", neighbor.FieldName, expectedSiblingValue), false
+}
+
+func missingWith(context *FieldValidationContext) (string, bool) {
+	siblingNames := []string{context.Params[0]}
+	neighborExists := isNeighborsPresent(context, siblingNames, true, true)
+
+	if !neighborExists {
+		return "", true
+	}
+
+	if _, presentOk := present(context); !presentOk {
+		return "", true
+	}
+
+	siblingJsonKeys := getNeighborJsonKeys(context, siblingNames)
+
+	return fmt.Sprintf("Must not be present when %s is present", siblingJsonKeys[0]), false
+}
+
+func missingWithAny(context *FieldValidationContext) (string, bool) {
+	siblingNames := context.Params
+	neighborExists := isNeighborsPresent(context, siblingNames, false, true)
+
+	if !neighborExists {
+		return "", true
+	}
+
+	if _, presentOk := present(context); !presentOk {
+		return "", true
+	}
+
+	siblingJsonKeys := getNeighborJsonKeys(context, siblingNames)
+
+	return fmt.Sprintf("Must not be present when any of [%s] is present", strings.Join(siblingJsonKeys, ",")), false
+}
+
+func missingWithAll(context *FieldValidationContext) (string, bool) {
+	siblingNames := context.Params
+	allNeighborsPresent := isNeighborsPresent(context, siblingNames, true, true)
+
+	if !allNeighborsPresent {
+		return "", true
+	}
+
+	if _, presentOk := present(context); !presentOk {
+		return "", true
+	}
+
+	siblingJsonKeys := getNeighborJsonKeys(context, siblingNames)
+
+	return fmt.Sprintf("Must not be present when all of [%s] is present", strings.Join(siblingJsonKeys, ",")), false
+}
+
+func missingWithout(context *FieldValidationContext) (string, bool) {
+	siblingNames := []string{context.Params[0]}
+	neighborExists := isNeighborsPresent(context, siblingNames, true, true)
+
+	if neighborExists {
+		return "", true
+	}
+
+	if _, presentOk := present(context); !presentOk {
+		return "", true
+	}
+
+	siblingJsonKeys := getNeighborJsonKeys(context, siblingNames)
+
+	return fmt.Sprintf("Must not be present when %s is not present", siblingJsonKeys[0]), false
+}
+
+func missingWithoutAny(context *FieldValidationContext) (string, bool) {
+	siblingNames := context.Params
+	allNeighborsArePresent := isNeighborsPresent(context, siblingNames, true, true)
+
+	if allNeighborsArePresent {
+		return "", true
+	}
+
+	if _, presentOk := present(context); !presentOk {
+		return "", true
+	}
+
+	siblingJsonKeys := getNeighborJsonKeys(context, siblingNames)
+
+	return fmt.Sprintf("Must not be present when any of [%s] is not present", strings.Join(siblingJsonKeys, ",")), false
+}
+
+func missingWithoutAll(context *FieldValidationContext) (string, bool) {
+	siblingNames := context.Params
+	anyNeighborIsPresent := isNeighborsPresent(context, siblingNames, false, true)
+
+	if anyNeighborIsPresent {
+		return "", true
+	}
+
+	if _, presentOk := present(context); !presentOk {
+		return "", true
+	}
+
+	siblingJsonKeys := getNeighborJsonKeys(context, siblingNames)
+
+	return fmt.Sprintf("Must not be present when all of [%s] is not present", strings.Join(siblingJsonKeys, ",")), false
 }
 
 func requiredWith(context *FieldValidationContext) (string, bool) {
@@ -179,6 +350,10 @@ func requiredWithoutAll(context *FieldValidationContext) (string, bool) {
 }
 
 func isNeighborsPresentAndNotNull(context *FieldValidationContext, fields []string, all bool) bool {
+	return isNeighborsPresent(context, fields, all, false)
+}
+
+func isNeighborsPresent(context *FieldValidationContext, fields []string, all, allowNull bool) bool {
 	isAllPresent := true
 
 	for _, field := range fields {
@@ -188,7 +363,11 @@ func isNeighborsPresentAndNotNull(context *FieldValidationContext, fields []stri
 			panic(fmt.Sprintf("No such field within struct: %s - Remember: Cross field references must use the struct name, and not the json name", field))
 		}
 
-		fieldPresent := ok && neighbor.Json.KeyPresent && !neighbor.Json.IsNull
+		fieldPresent := neighbor.Json.KeyPresent
+		if !allowNull {
+			fieldPresent = fieldPresent && !neighbor.Json.IsNull
+		}
+
 		isAllPresent = isAllPresent && fieldPresent
 
 		// When we want to know all fields are present but one is not
@@ -417,27 +596,13 @@ func isFloat(context *FieldValidationContext) (string, bool) {
 }
 
 func isIn(context *FieldValidationContext) (string, bool) {
-	var actualValue string
 	errorMessage := fmt.Sprintf("Value must be in set: [%s]", strings.Join(context.Params, ", "))
 
 	if context.Validation.Json.IsNull {
 		return fmt.Sprintf("%s - [NULL] given", errorMessage), false
 	}
 
-	valueFound := true
-
-	// Extract the actual value from the json
-	if value, isInt := context.Validation.Json.Value.(int); isInt {
-		actualValue = strconv.Itoa(value)
-	} else if value, isFloat := context.Validation.Json.Value.(float64); isFloat {
-		actualValue = strings.TrimRight(fmt.Sprintf("%f", value), "0.")
-	} else if value, isString := context.Validation.Json.Value.(string); isString {
-		actualValue = value
-	} else if value, isString := context.Validation.Json.Value.(bool); isString {
-		actualValue = strconv.FormatBool(value)
-	} else {
-		valueFound = false
-	}
+	actualValue, valueFound := castValueToString(context.Validation.Json.Value)
 
 	// Verify the found value
 	if valueFound {
@@ -452,6 +617,26 @@ func isIn(context *FieldValidationContext) (string, bool) {
 	} else {
 		return fmt.Sprintf("%s - Incompatiable type given", errorMessage), false
 	}
+}
+
+func castValueToString(jsonValue any) (string, bool) {
+	var actualValue string
+	valueFound := true
+
+	// Extract the actual value from the json
+	if value, isInt := jsonValue.(int); isInt {
+		actualValue = strconv.Itoa(value)
+	} else if value, isFloat := jsonValue.(float64); isFloat {
+		actualValue = strings.TrimRight(fmt.Sprintf("%f", value), "0.")
+	} else if value, isString := jsonValue.(string); isString {
+		actualValue = value
+	} else if value, isString := jsonValue.(bool); isString {
+		actualValue = strconv.FormatBool(value)
+	} else {
+		valueFound = false
+	}
+
+	return actualValue, valueFound
 }
 
 func Alpha3Currency(context *FieldValidationContext) (string, bool) {

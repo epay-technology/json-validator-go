@@ -77,6 +77,14 @@ myRequest, err := JsonValidator.Validate[MyRequest](jsonBytes)
 | `requiredWithAll:{x},{z},...`    | The field key must be both present in the JSON and have a non-null value if all of the sibling fields `{x},{z},...` is present.                              |
 | `requiredWithoutAll:{x},{z},...` | The field key must be both present in the JSON and have a non-null value if all of the sibling fields `{x},{z},...` is not present.                          |
 | `requireOneInGroup:{groupName}`  | Exactly one field with the `{groupName}` must be present and have a non-null value                                                                           |
+| `missingIf:{x},{y}`              | The field must not be present if `{x}` is present and has value `{y}`.                                                                                       |
+| `missingUnless:{x},{y}`          | The field must not be present unless `{x}` is present and has value `{y}`.                                                                                   |
+| `missingWith:{x}`                | The field must not be present if `{x}` is present.                                                                                                           |
+| `missingWithout:{x}`             | The field must not be present if `{x}` is not present.                                                                                                       |
+| `missingWithAny:{x},{z},...`     | The field must not be present if any of fields `{x},{z},...` is present.                                                                                     |
+| `missingWithoutAny:{x},{z},...`  | The field must not be present if any of fields `{x},{z},...` is not present.                                                                                 |
+| `missingWithAll:{x},{z},...`     | The field must not be present if all of fields `{x},{z},...` is present.                                                                                     |
+| `missingWithoutAll:{x},{z},...`  | The field must not be present if all of fields `{x},{z},...` is not present.                                                                                 |
 | `present`                        | The field key must be present in the JSON.                                                                                                                   |
 | `len:{n}`                        | Checks value is countable and length is exactly `{n}` (`string`, `array`, `object`)                                                                          |
 | `lenMax:{n}`                     | Checks value is countable and length is at most `{n}` (`string`, `array`, `object`)                                                                          |
