@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -320,70 +319,6 @@ func (validator *Validator) isEmptyValue(value any) bool {
 		return value.Int() == 0
 	case reflect.Float32, reflect.Float64:
 		return value.Float() == 0
-	}
-
-	return false
-}
-
-func (validator *Validator) getJsonTagForStructField(field reflect.StructField) *JsonTag {
-	tagline, ok := field.Tag.Lookup("json")
-
-	if !ok {
-		return &JsonTag{JsonKey: field.Name}
-	}
-
-	return &JsonTag{JsonKey: strings.Split(tagline, ",")[0]}
-}
-
-func (validator *Validator) getJsonTagForSliceEntry(index int) *JsonTag {
-	return &JsonTag{JsonKey: strconv.Itoa(index)}
-}
-
-func (validator *Validator) getValidationTag(field reflect.StructField) *ValidationTag {
-	tagline, ok := field.Tag.Lookup("validation")
-
-	if !ok {
-		return newValidationTag(validator.Rulebook, "")
-	}
-
-	return newValidationTag(validator.Rulebook, tagline)
-}
-
-// extractPresenceRules The first value in non-presence rules the second value is the presence rules
-func (validator *Validator) extractPresenceRules(rules []string) (nonPresenceRulesList []*rule, presenceRulesList []*rule) {
-	for _, ruleString := range rules {
-		rule := validator.extractRule(ruleString)
-
-		if slices.Contains(presenceRules, rule.name) {
-			presenceRulesList = append(presenceRulesList, rule)
-		} else {
-			nonPresenceRulesList = append(nonPresenceRulesList, rule)
-		}
-	}
-
-	return nonPresenceRulesList, presenceRulesList
-}
-
-func (validator *Validator) extractRule(ruleString string) *rule {
-	var params []string
-	split := strings.Split(ruleString, ":")
-	name := split[0]
-
-	if len(split) > 1 {
-		params = strings.Split(split[1], ",")
-	}
-
-	return &rule{
-		name:   name,
-		params: params,
-	}
-}
-
-func (validator *Validator) containsNullableRules(slice []*rule, values []string) bool {
-	for _, value := range slice {
-		if slices.Contains(values, value.name) {
-			return true
-		}
 	}
 
 	return false
