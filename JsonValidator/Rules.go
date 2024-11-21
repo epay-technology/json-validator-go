@@ -734,11 +734,11 @@ func isDate(context *FieldValidationContext) (string, bool) {
 	errorMessage := "Must be a valid YYYY-MM-DD date formatted string"
 	value, ok := context.Validation.Json.Value.(string)
 	if !ok {
-		return errorMessage, false
+		return errorMessage + " - Non string given", false
 	}
 
 	_, err := time.Parse("2006-01-02", value)
-	return errorMessage, err == nil
+	return fmt.Sprintf("%s - Got: [%s]", errorMessage, value), err == nil
 }
 
 func isBetween(context *FieldValidationContext) (string, bool) {
