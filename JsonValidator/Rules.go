@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var rules = map[string]RuleFunction{
@@ -35,6 +36,7 @@ var rules = map[string]RuleFunction{
 	"requiredWithAll":    requiredWithAll,
 	"requiredWithoutAll": requiredWithoutAll,
 	"requireOneInGroup":  requireOneInGroup,
+	"date":               isDate,
 	"array":              isArray,
 	"object":             isObject,
 	"string":             isString,
@@ -726,6 +728,17 @@ func matchesRegex(context *FieldValidationContext) (string, bool) {
 	errorMessage := fmt.Sprintf("Must be a string matching regex: %s", regexString)
 
 	return errorMessage, verifyRegex(context, regexString)
+}
+
+func isDate(context *FieldValidationContext) (string, bool) {
+	errorMessage := "Must be a valid YYYY-MM-DD date formatted string"
+	value, ok := context.Validation.Json.Value.(string)
+	if !ok {
+		return errorMessage, false
+	}
+
+	_, err := time.Parse("2006-01-02", value)
+	return errorMessage, err == nil
 }
 
 func isBetween(context *FieldValidationContext) (string, bool) {
