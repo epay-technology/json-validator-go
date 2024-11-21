@@ -96,6 +96,7 @@ myRequest, err := JsonValidator.Validate[MyRequest](jsonBytes)
 | `int/integer`                    | Checks value is an `integer`                                                                                                                                 |
 | `float`                          | Checks value is a `float`                                                                                                                                    |
 | `bool/boolean`                   | Checks value is a `boolean`                                                                                                                                  |
+| `date`                           | Checks value is a YYYY-MM-DD formatted string                                                                                                                |
 | `in:{a},{b},...`                 | Checks that the value is within the the list `{a},{b},...` If the list has a trailing `,` or if a `,,` is present, an empty string will be considered valid. |
 | `uuid`                           | Checks that the value is a valid non-zero UUID string.                                                                                                       |
 | `zeroableUuid`                   | Checks that the value is any valid UUID string.                                                                                                              |
