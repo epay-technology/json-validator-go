@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/epay-technology/package-conversions-go/CurrencyCode"
 	"net"
+	"net/url"
 	"reflect"
 	"regexp"
 	"slices"
@@ -688,9 +689,34 @@ func isZeroableUuid(context *FieldValidationContext) (string, bool) {
 }
 
 func isUrl(context *FieldValidationContext) (string, bool) {
-	errorMessage := "Must be a valid url string"
+	errorMessage := "Must be a valid http/https url string without port (ip and localhost are not allowed)"
 
-	return errorMessage, verifyRegex(context, "^(?:ftp|tcp|udp|wss?|https?):\\/\\/[\\w\\.\\/#=?&-_%]+$")
+	if !verifyRegex(context, "^(?:https?):\\/\\/[\\w\\.\\/#=?&-_%]+$") {
+		return errorMessage, false
+	}
+
+	parsedUrl, err := url.Parse(context.Validation.Json.Value.(string))
+	if err != nil {
+		return errorMessage, false
+	}
+
+	if parsedUrl.Port() != "" {
+		return errorMessage, false
+	}
+
+	return errorMessage, !IsIPOrLocalhost(parsedUrl.Hostname())
+}
+
+func IsIPOrLocalhost(input string) bool {
+	if strings.ToLower(input) == "localhost" {
+		return true
+	}
+
+	if net.ParseIP(input) != nil {
+		return true
+	}
+
+	return false
 }
 
 func isIp(context *FieldValidationContext) (string, bool) {
