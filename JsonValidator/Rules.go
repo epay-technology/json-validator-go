@@ -703,28 +703,11 @@ func isUrl(context *FieldValidationContext) (string, bool) {
 	hostname := parsedUrl.Hostname()
 	sections := strings.Split(hostname, ".")
 
-	if parsedUrl.Port() != "" || hostname == "" || len(sections) < 2 {
+	if hostname == "" || len(sections) < 2 {
 		return errorMessage, false
 	}
 
-	tld := sections[len(sections)-1]
-	if _, err := strconv.Atoi(tld); err == nil {
-		return errorMessage, false
-	}
-
-	return errorMessage, !IsIPOrLocalhost(hostname)
-}
-
-func IsIPOrLocalhost(input string) bool {
-	if strings.ToLower(input) == "localhost" {
-		return true
-	}
-
-	if net.ParseIP(input) != nil {
-		return true
-	}
-
-	return false
+	return errorMessage, strings.ToLower(hostname) != "localhost"
 }
 
 func isIp(context *FieldValidationContext) (string, bool) {
