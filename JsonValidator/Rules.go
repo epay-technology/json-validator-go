@@ -700,11 +700,19 @@ func isUrl(context *FieldValidationContext) (string, bool) {
 		return errorMessage, false
 	}
 
-	if parsedUrl.Port() != "" {
+	hostname := parsedUrl.Hostname()
+	sections := strings.Split(hostname, ".")
+
+	if parsedUrl.Port() != "" || hostname == "" || len(sections) < 2 {
 		return errorMessage, false
 	}
 
-	return errorMessage, !IsIPOrLocalhost(parsedUrl.Hostname())
+	tld := sections[len(sections)-1]
+	if _, err := strconv.Atoi(tld); err == nil {
+		return errorMessage, false
+	}
+
+	return errorMessage, !IsIPOrLocalhost(hostname)
 }
 
 func IsIPOrLocalhost(input string) bool {
