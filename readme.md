@@ -104,7 +104,7 @@ myRequest, err := JsonValidator.Validate[MyRequest](jsonBytes)
 | `between:{x},{z}`                | Checks that the value is a number between `{x}` and `{z}` inclusively                                                                                        |
 | `min:{x}`                        | Checks that the value is a number greater than or equal to `{x}`                                                                                             |
 | `max:{x}`                        | Checks that the value is a number less than or equal to `{x}`                                                                                                |
-| `url`                            | Checks that the value is a non-empty URL string                                                                                                              |
+| `url:{?options}`                 | Checks that the value is a non-empty URL string. An optional list of options can be given to allow certain formats. Options: [localhost]                     |
 | `ip`                             | Checks that the value is a non-empty IP string                                                                                                               |
 | `email`                          | Checks that the value is a non-empty email string                                                                                                            |
 | `json`                           | Checks that the value is a valid json string                                                                                                                 |
