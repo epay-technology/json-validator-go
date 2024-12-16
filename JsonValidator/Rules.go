@@ -690,6 +690,7 @@ func isZeroableUuid(context *FieldValidationContext) (string, bool) {
 
 func isUrl(context *FieldValidationContext) (string, bool) {
 	errorMessage := "Must be a valid http/https url string without port (ip and localhost are not allowed)"
+	allowLocalhost := slices.Contains(context.Params, "localhost")
 
 	if !verifyRegex(context, "^(?:https?):\\/\\/[\\w\\.\\/#=?&-_%]+$") {
 		return errorMessage, false
@@ -701,13 +702,18 @@ func isUrl(context *FieldValidationContext) (string, bool) {
 	}
 
 	hostname := parsedUrl.Hostname()
+	isLocalhost := strings.ToLower(hostname) == "localhost"
 	sections := strings.Split(hostname, ".")
 
-	if hostname == "" || len(sections) < 2 {
+	if hostname == "" || (len(sections) < 2 && !isLocalhost) {
 		return errorMessage, false
 	}
 
-	return errorMessage, strings.ToLower(hostname) != "localhost"
+	if !allowLocalhost && isLocalhost {
+		return errorMessage, false
+	}
+
+	return errorMessage, true
 }
 
 func isIp(context *FieldValidationContext) (string, bool) {
