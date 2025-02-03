@@ -64,6 +64,18 @@ myRequest, err := JsonValidator.Validate[MyRequest](jsonBytes)
 }
 ```
 
+## Composite Rules
+
+Composite rules allow reusable rules that apply a set of defined rules making it easier to reuse the same validation rules for the properties on multiple structs.
+
+```go
+validator.RegisterComposite("MyComposite", "nullable|lenMax:$0")
+
+type User struct {
+Name *string `json:"name" validation:"present|MyComposite:255"` // Name must be present, but can be null or a string with a maximum length of 255 chars
+}
+```
+
 # Rules
 
 | Name                             | Description                                                                                                                                                  |
