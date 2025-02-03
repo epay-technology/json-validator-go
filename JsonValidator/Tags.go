@@ -27,7 +27,11 @@ func newValidationTag(rulebook *Rulebook, tagline string) *ValidationTag {
 	var presenceRules []*RuleContext
 	explicitNullable := false
 
-	ruleDefinitions := strings.Split(strings.TrimSpace(tagline), "|")
+	ruleParser := func(definition string) []string {
+		return strings.Split(strings.TrimSpace(definition), "|")
+	}
+
+	ruleDefinitions := unwrapCompositeRules(rulebook, ruleParser(tagline), ruleParser)
 
 	for _, ruleDefinition := range ruleDefinitions {
 		rule := rulebook.GetRule(ruleDefinition)
@@ -48,6 +52,22 @@ func newValidationTag(rulebook *Rulebook, tagline string) *ValidationTag {
 		PresenceRules:      presenceRules,
 		ExplicitlyNullable: explicitNullable,
 	}
+}
+
+func unwrapCompositeRules(rulebook *Rulebook, ruleDefinitions []string, ruleParser func(tagLine string) []string) []string {
+	rules := make([]string, 0, len(ruleDefinitions))
+
+	// Unwrap all composite rules and replace them with their underlying rules.
+	for _, ruleDefinition := range ruleDefinitions {
+		if rulebook.IsComposite(ruleDefinition) {
+			composite := rulebook.GetComposite(ruleDefinition)
+			rules = append(rules, ruleParser(composite)...)
+		} else {
+			rules = append(rules, ruleDefinition)
+		}
+	}
+
+	return rules
 }
 
 func (tag *ValidationTag) GetRules(name string) []*RuleContext {

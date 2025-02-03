@@ -10,10 +10,16 @@ type RuleFunction func(*FieldValidationContext) (string, bool)
 
 type ruleFunctionList map[string]RuleFunction
 
-type Rulebook map[string]Rule
+type Rulebook struct {
+	rules      map[string]Rule
+	composites map[string]string
+}
 
 func newRulebook(rules ruleFunctionList, nullableRules []string, presenceRules []string, aliases map[string]string) *Rulebook {
-	rulebook := &Rulebook{}
+	rulebook := &Rulebook{
+		rules:      make(map[string]Rule),
+		composites: make(map[string]string),
+	}
 
 	for name, rule := range rules {
 		rulebook.RegisterRule(Rule{
@@ -32,7 +38,7 @@ func newRulebook(rules ruleFunctionList, nullableRules []string, presenceRules [
 }
 
 func (rulebook Rulebook) RegisterRule(rule Rule) Rulebook {
-	rulebook[rule.Name] = rule
+	rulebook.rules[rule.Name] = rule
 
 	return rulebook
 }
@@ -50,6 +56,35 @@ func (rulebook Rulebook) RegisterAlias(alias string, name string) Rulebook {
 	return rulebook
 }
 
+func (rulebook Rulebook) RegisterComposite(name string, rules string) Rulebook {
+	rulebook.composites[name] = rules
+
+	return rulebook
+}
+
+func (rulebook Rulebook) IsComposite(ruleDefinition string) bool {
+	name, _ := rulebook.parseRuleDefinition(ruleDefinition)
+	_, ok := rulebook.composites[name]
+
+	return ok
+}
+
+func (rulebook Rulebook) GetComposite(ruleDefinition string) string {
+	name, params := rulebook.parseRuleDefinition(ruleDefinition)
+	compositeRule, exists := rulebook.composites[name]
+	if !exists {
+		panic(fmt.Sprintf("No registered composite for name %s", name))
+	}
+
+	// Replace placeholders with provided params
+	for i, param := range params {
+		placeholder := fmt.Sprintf("$%d", i)
+		compositeRule = strings.ReplaceAll(compositeRule, placeholder, param)
+	}
+
+	return compositeRule
+}
+
 func (rulebook Rulebook) GetRule(ruleDefinition string) *RuleContext {
 	name, params := rulebook.parseRuleDefinition(ruleDefinition)
 	definition := rulebook.getRuleDefinition(name)
@@ -61,11 +96,11 @@ func (rulebook Rulebook) GetRule(ruleDefinition string) *RuleContext {
 }
 
 func (rulebook Rulebook) getRuleDefinition(name string) Rule {
-	if rule, ok := rulebook[name]; ok {
+	if rule, ok := rulebook.rules[name]; ok {
 		return rule
 	}
 
-	panic(fmt.Sprintf("No registered rule for name %s", name))
+	panic(fmt.Sprintf("No registered rule for name [%s]", name))
 }
 
 func (rulebook Rulebook) parseRuleDefinition(ruleDefinition string) (string, []string) {
