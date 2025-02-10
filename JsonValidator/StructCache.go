@@ -10,7 +10,7 @@ import (
 
 type FieldCache struct {
 	Parent        *FieldCache
-	Children      []*FieldCache
+	Children      *Children
 	Reflection    reflect.Type
 	JsonKey       string
 	StructKey     string
@@ -19,6 +19,20 @@ type FieldCache struct {
 	IsSlice       bool
 	IsMap         bool
 }
+
+type Children struct {
+	list []*FieldCache
+}
+
+func (children *Children) Append(field ...*FieldCache) {
+	children.list = append(children.list, field...)
+}
+
+func (children *Children) All() []*FieldCache {
+	return children.list
+}
+
+type intermediateCache map[reflect.Type]*FieldCache
 
 type StructCache struct {
 	Cache     map[reflect.Type]*FieldCache
@@ -31,7 +45,7 @@ func newStructCache() *StructCache {
 }
 
 func (fieldCache *FieldCache) GetChildByName(name string) *FieldCache {
-	for _, child := range fieldCache.Children {
+	for _, child := range fieldCache.Children.All() {
 		if child.StructKey == name {
 			return child
 		}
@@ -67,7 +81,7 @@ func (structCache *StructCache) Analyze(rulebook *Rulebook, targetType reflect.T
 
 	root := &FieldCache{
 		Parent:     nil,
-		Children:   []*FieldCache{},
+		Children:   &Children{list: []*FieldCache{}},
 		Reflection: targetType,
 		JsonKey:    "",
 		StructKey:  "",
@@ -81,7 +95,7 @@ func (structCache *StructCache) Analyze(rulebook *Rulebook, targetType reflect.T
 		IsMap:    false,
 	}
 
-	structCache.traverseType(root, rulebook)
+	structCache.traverseType(root, rulebook, intermediateCache{})
 	structCache.Cache[targetType] = root
 
 	return root, nil
@@ -111,17 +125,17 @@ func (structCache *StructCache) typeIndirect(targetType reflect.Type) reflect.Ty
 	return targetType
 }
 
-func (structCache *StructCache) traverseType(parent *FieldCache, rulebook *Rulebook) {
+func (structCache *StructCache) traverseType(parent *FieldCache, rulebook *Rulebook, cache intermediateCache) {
 	if parent.IsStruct {
-		structCache.traverseStruct(parent, rulebook)
+		structCache.traverseStruct(parent, rulebook, cache)
 	} else if parent.IsSlice {
-		structCache.traverseSlice(parent, rulebook)
+		structCache.traverseSlice(parent, rulebook, cache)
 	} else if parent.IsMap {
-		structCache.traverseMap(parent, rulebook)
+		structCache.traverseMap(parent, rulebook, cache)
 	}
 }
 
-func (structCache *StructCache) traverseStruct(parent *FieldCache, rulebook *Rulebook) {
+func (structCache *StructCache) traverseStruct(parent *FieldCache, rulebook *Rulebook, cache intermediateCache) {
 	numFields := parent.Reflection.NumField()
 
 	for i := 0; i < numFields; i++ {
@@ -130,7 +144,7 @@ func (structCache *StructCache) traverseStruct(parent *FieldCache, rulebook *Rul
 
 		field := &FieldCache{
 			Parent:        parent,
-			Children:      []*FieldCache{},
+			Children:      &Children{list: []*FieldCache{}},
 			Reflection:    structType,
 			JsonKey:       structCache.getJsonTagForStructField(structField).JsonKey,
 			StructKey:     structField.Name,
@@ -140,23 +154,32 @@ func (structCache *StructCache) traverseStruct(parent *FieldCache, rulebook *Rul
 			IsMap:         structCache.typeIsMap(structType),
 		}
 
-		structCache.traverseType(field, rulebook)
-
-		if structField.Anonymous { // Embedded fields are a part of the parent type itself
-			parent.Children = append(parent.Children, field.Children...)
+		if cachedField, cached := cache[structType]; cached {
+			field.Children = cachedField.Children
 		} else {
-			parent.Children = append(parent.Children, field)
+			cache[structType] = field
+			structCache.traverseType(field, rulebook, cache)
 		}
+
+		structCache.appendChild(parent, structField, field)
 	}
 }
 
-func (structCache *StructCache) traverseMap(parent *FieldCache, rulebook *Rulebook) {
+func (structCache *StructCache) appendChild(parent *FieldCache, structField reflect.StructField, field *FieldCache) {
+	if structField.Anonymous { // Embedded fields are a part of the parent type itself
+		parent.Children.Append(field.Children.All()...)
+	} else {
+		parent.Children.Append(field)
+	}
+}
+
+func (structCache *StructCache) traverseMap(parent *FieldCache, rulebook *Rulebook, cache intermediateCache) {
 	sliceElem := structCache.typeIndirect(parent.Reflection)
 	mapSubType := structCache.typeIndirect(sliceElem.Elem())
 
 	field := &FieldCache{
 		Parent:        parent,
-		Children:      []*FieldCache{},
+		Children:      &Children{list: []*FieldCache{}},
 		Reflection:    mapSubType,
 		JsonKey:       "{index}",
 		StructKey:     "{index}",
@@ -166,8 +189,14 @@ func (structCache *StructCache) traverseMap(parent *FieldCache, rulebook *Rulebo
 		IsMap:         structCache.typeIsMap(mapSubType),
 	}
 
-	parent.Children = append(parent.Children, field)
-	structCache.traverseType(field, rulebook)
+	if cachedField, cached := cache[mapSubType]; cached {
+		field.Children = cachedField.Children
+	} else {
+		cache[mapSubType] = field
+		structCache.traverseType(field, rulebook, cache)
+	}
+
+	parent.Children.Append(field)
 }
 
 func (structCache *StructCache) typeIsStruct(reflectType reflect.Type) bool {
@@ -206,13 +235,13 @@ func (structCache *StructCache) getValidationTag(field reflect.StructField, rule
 	return newValidationTag(rulebook, tagline)
 }
 
-func (structCache *StructCache) traverseSlice(parent *FieldCache, rulebook *Rulebook) {
+func (structCache *StructCache) traverseSlice(parent *FieldCache, rulebook *Rulebook, cache intermediateCache) {
 	sliceElem := structCache.typeIndirect(parent.Reflection)
 	sliceSubtype := structCache.typeIndirect(sliceElem.Elem())
 
 	field := &FieldCache{
 		Parent:        parent,
-		Children:      []*FieldCache{},
+		Children:      &Children{list: []*FieldCache{}},
 		Reflection:    sliceSubtype,
 		JsonKey:       "{index}",
 		StructKey:     "{index}",
@@ -222,6 +251,12 @@ func (structCache *StructCache) traverseSlice(parent *FieldCache, rulebook *Rule
 		IsMap:         structCache.typeIsMap(sliceSubtype),
 	}
 
-	parent.Children = append(parent.Children, field)
-	structCache.traverseType(field, rulebook)
+	if cachedField, cached := cache[sliceSubtype]; cached {
+		field.Children = cachedField.Children
+	} else {
+		cache[sliceSubtype] = field
+		structCache.traverseType(field, rulebook, cache)
+	}
+
+	parent.Children.Append(field)
 }
