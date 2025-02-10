@@ -104,7 +104,7 @@ func (validator *Validator) validateSliceEntries(context *ValidationContext, val
 	}
 
 	jsonArrayLen := jsonReflection.Len()
-	sliceSubtype := context.Field.Children[0]
+	sliceSubtype := context.Field.Children.All()[0]
 
 	// TODO: Support diving
 	for i := 0; i < jsonArrayLen; i++ {
@@ -125,7 +125,7 @@ func (validator *Validator) validateMapEntries(context *ValidationContext, valid
 	}
 
 	mapKeys := jsonReflection.MapKeys()
-	sliceSubtype := context.Field.Children[0]
+	sliceSubtype := context.Field.Children.All()[0]
 
 	// TODO: Support diving
 	for _, key := range mapKeys {
@@ -185,7 +185,7 @@ func (validator *Validator) buildMapEntryContext(parentContext *ValidationContex
 }
 
 func (validator *Validator) validateStructSubFields(context *ValidationContext, validation *ErrorBag) {
-	for _, subField := range context.Field.Children {
+	for _, subField := range context.Field.Children.All() {
 		fieldContext := validator.buildFieldContext(context, subField)
 
 		validator.validateField(fieldContext, validation)

@@ -437,7 +437,7 @@ func requireOneInGroup(context *FieldValidationContext) (string, bool) {
 func extractSiblingNamesByGroup(context *FieldValidationContext, groupName string) []string {
 	var names []string
 
-	for _, child := range context.Validation.ParentContext.Field.Children {
+	for _, child := range context.Validation.ParentContext.Field.Children.All() {
 		// Ignore self
 		if child.StructKey == context.Validation.Field.StructKey {
 			continue
