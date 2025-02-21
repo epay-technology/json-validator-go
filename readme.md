@@ -78,46 +78,47 @@ Name *string `json:"name" validation:"present|MyComposite:255"` // Name must be 
 
 # Rules
 
-| Name                             | Description                                                                                                                                                  |
-|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `nullable/nilable`               | Explicitly allows the field to be nullable. <br/>(Disables other validation rules when value is null)                                                        |
-| `required`                       | The field key must be both present in the JSON and have a non-null value.                                                                                    |
-| `requiredWith:{x}`               | The field key must be both present in the JSON and have a non-null value if sibling field `{x}` is present.                                                  |
-| `requiredWithout:{x}`            | The field key must be both present in the JSON and have a non-null value if sibling field `{x}` is not present.                                              |
-| `requiredWithAny:{x},{z},...`    | The field key must be both present in the JSON and have a non-null value if any of the sibling fields `{x},{z},...` is present.                              |
-| `requiredWithoutAny:{x},{z},...` | The field key must be both present in the JSON and have a non-null value if any of the sibling fields `{x},{z},...` is not present.                          |
-| `requiredWithAll:{x},{z},...`    | The field key must be both present in the JSON and have a non-null value if all of the sibling fields `{x},{z},...` is present.                              |
-| `requiredWithoutAll:{x},{z},...` | The field key must be both present in the JSON and have a non-null value if all of the sibling fields `{x},{z},...` is not present.                          |
-| `requireOneInGroup:{groupName}`  | Exactly one field with the `{groupName}` must be present and have a non-null value                                                                           |
-| `missingIf:{x},{y}`              | The field must not be present if `{x}` is present and has value `{y}`.                                                                                       |
-| `missingUnless:{x},{y}`          | The field must not be present unless `{x}` is present and has value `{y}`.                                                                                   |
-| `missingWith:{x}`                | The field must not be present if `{x}` is present.                                                                                                           |
-| `missingWithout:{x}`             | The field must not be present if `{x}` is not present.                                                                                                       |
-| `missingWithAny:{x},{z},...`     | The field must not be present if any of fields `{x},{z},...` is present.                                                                                     |
-| `missingWithoutAny:{x},{z},...`  | The field must not be present if any of fields `{x},{z},...` is not present.                                                                                 |
-| `missingWithAll:{x},{z},...`     | The field must not be present if all of fields `{x},{z},...` is present.                                                                                     |
-| `missingWithoutAll:{x},{z},...`  | The field must not be present if all of fields `{x},{z},...` is not present.                                                                                 |
-| `present`                        | The field key must be present in the JSON.                                                                                                                   |
-| `len:{n}`                        | Checks value is countable and length is exactly `{n}` (`string`, `array`, `object`)                                                                          |
-| `lenMax:{n}`                     | Checks value is countable and length is at most `{n}` (`string`, `array`, `object`)                                                                          |
-| `lenMin:{n}`                     | Checks value is countable and length is at least `{n}` (`string`, `array`, `object`)                                                                         |
-| `lenBetween:{n},{m}`             | Checks value is countable and length is between `{n}` and `{m}` inclusively (`string`, `array`, `object`)                                                    |
-| `array`                          | Checks value is an `array`/`slice`                                                                                                                           | 
-| `object`                         | Checks value is an `object`/`map`/`struct`                                                                                                                   |
-| `string`                         | Checks value is a `string`                                                                                                                                   |
-| `int/integer`                    | Checks value is an `integer`                                                                                                                                 |
-| `float`                          | Checks value is a `float`                                                                                                                                    |
-| `bool/boolean`                   | Checks value is a `boolean`                                                                                                                                  |
-| `date`                           | Checks value is a YYYY-MM-DD formatted string                                                                                                                |
-| `in:{a},{b},...`                 | Checks that the value is within the the list `{a},{b},...` If the list has a trailing `,` or if a `,,` is present, an empty string will be considered valid. |
-| `uuid`                           | Checks that the value is a valid non-zero UUID string.                                                                                                       |
-| `zeroableUuid`                   | Checks that the value is any valid UUID string.                                                                                                              |
-| `regex:{x}`                      | Checks that the value is a string that is matched by the `{x}` regex definition                                                                              |
-| `between:{x},{z}`                | Checks that the value is a number between `{x}` and `{z}` inclusively                                                                                        |
-| `min:{x}`                        | Checks that the value is a number greater than or equal to `{x}`                                                                                             |
-| `max:{x}`                        | Checks that the value is a number less than or equal to `{x}`                                                                                                |
-| `url:{?options}`                 | Checks that the value is a non-empty URL string. An optional list of options can be given to allow certain formats. Options: [localhost]                     |
-| `ip`                             | Checks that the value is a non-empty IP string                                                                                                               |
-| `email`                          | Checks that the value is a non-empty email string                                                                                                            |
-| `json`                           | Checks that the value is a valid json string                                                                                                                 |
-| `alpha3Currency`                 | Checks that the value is a valid alpha-3 currency code                                                                                                       |
+| Name                             | Description                                                                                                                                                        |
+|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `nullable/nilable`               | Explicitly allows the field to be nullable. <br/>(Disables other validation rules when value is null)                                                              |
+| `required`                       | The field key must be both present in the JSON and have a non-null value.                                                                                          |
+| `requiredWith:{x}`               | The field key must be both present in the JSON and have a non-null value if sibling field `{x}` is present.                                                        |
+| `requiredWithout:{x}`            | The field key must be both present in the JSON and have a non-null value if sibling field `{x}` is not present.                                                    |
+| `requiredWithAny:{x},{z},...`    | The field key must be both present in the JSON and have a non-null value if any of the sibling fields `{x},{z},...` is present.                                    |
+| `requiredWithoutAny:{x},{z},...` | The field key must be both present in the JSON and have a non-null value if any of the sibling fields `{x},{z},...` is not present.                                |
+| `requiredWithAll:{x},{z},...`    | The field key must be both present in the JSON and have a non-null value if all of the sibling fields `{x},{z},...` is present.                                    |
+| `requiredWithoutAll:{x},{z},...` | The field key must be both present in the JSON and have a non-null value if all of the sibling fields `{x},{z},...` is not present.                                |
+| `requireOneInGroup:{groupName}`  | Exactly one field with the `{groupName}` must be present and have a non-null value                                                                                 |
+| `missingIf:{x},{y}`              | The field must not be present if `{x}` is present and has value `{y}`.                                                                                             |
+| `missingUnless:{x},{y}`          | The field must not be present unless `{x}` is present and has value `{y}`.                                                                                         |
+| `missingWith:{x}`                | The field must not be present if `{x}` is present.                                                                                                                 |
+| `missingWithout:{x}`             | The field must not be present if `{x}` is not present.                                                                                                             |
+| `missingWithAny:{x},{z},...`     | The field must not be present if any of fields `{x},{z},...` is present.                                                                                           |
+| `missingWithoutAny:{x},{z},...`  | The field must not be present if any of fields `{x},{z},...` is not present.                                                                                       |
+| `missingWithAll:{x},{z},...`     | The field must not be present if all of fields `{x},{z},...` is present.                                                                                           |
+| `missingWithoutAll:{x},{z},...`  | The field must not be present if all of fields `{x},{z},...` is not present.                                                                                       |
+| `present`                        | The field key must be present in the JSON.                                                                                                                         |
+| `len:{n}`                        | Checks value is countable and length is exactly `{n}` (`string`, `array`, `object`)                                                                                |
+| `lenMax:{n}`                     | Checks value is countable and length is at most `{n}` (`string`, `array`, `object`)                                                                                |
+| `lenMin:{n}`                     | Checks value is countable and length is at least `{n}` (`string`, `array`, `object`)                                                                               |
+| `lenBetween:{n},{m}`             | Checks value is countable and length is between `{n}` and `{m}` inclusively (`string`, `array`, `object`)                                                          |
+| `array`                          | Checks value is an `array`/`slice`                                                                                                                                 |
+| `object`                         | Checks value is an `object`/`map`/`struct`                                                                                                                         |
+| `string`                         | Checks value is a `string`                                                                                                                                         |
+| `int/integer`                    | Checks value is an `integer`                                                                                                                                       |
+| `float`                          | Checks value is a `float`                                                                                                                                          |
+| `bool/boolean`                   | Checks value is a `boolean`                                                                                                                                        |
+| `date`                           | Checks value is a YYYY-MM-DD formatted string                                                                                                                      |
+| `in:{a},{b},...`                 | Checks that the value is within the the list `{a},{b},...` If the list has a trailing `,` or if a `,,` is present, an empty string will be considered valid.       |
+| `notIn:{a},{b},...`              | Checks that the value is not within the the list `{a},{b},...` If the list has a trailing `,` or if a `,,` is present, an empty string will be considered invalid. |
+| `uuid`                           | Checks that the value is a valid non-zero UUID string.                                                                                                             |
+| `zeroableUuid`                   | Checks that the value is any valid UUID string.                                                                                                                    |
+| `regex:{x}`                      | Checks that the value is a string that is matched by the `{x}` regex definition                                                                                    |
+| `between:{x},{z}`                | Checks that the value is a number between `{x}` and `{z}` inclusively                                                                                              |
+| `min:{x}`                        | Checks that the value is a number greater than or equal to `{x}`                                                                                                   |
+| `max:{x}`                        | Checks that the value is a number less than or equal to `{x}`                                                                                                      |
+| `url:{?options}`                 | Checks that the value is a non-empty URL string. An optional list of options can be given to allow certain formats. Options: [localhost]                           |
+| `ip`                             | Checks that the value is a non-empty IP string                                                                                                                     |
+| `email`                          | Checks that the value is a non-empty email string                                                                                                                  |
+| `json`                           | Checks that the value is a valid json string                                                                                                                       |
+| `alpha3Currency`                 | Checks that the value is a valid alpha-3 currency code                                                                                                             |
