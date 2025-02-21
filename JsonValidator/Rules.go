@@ -45,6 +45,7 @@ var rules = map[string]RuleFunction{
 	"float":              isFloat,
 	"bool":               isBool,
 	"in":                 isIn,
+	"notIn":              isNotIn,
 	"alpha3Currency":     Alpha3Currency,
 	"uuid":               isUuid,
 	"zeroableUuid":       isZeroableUuid,
@@ -610,6 +611,30 @@ func isIn(context *FieldValidationContext) (string, bool) {
 	// Verify the found value
 	if valueFound {
 		return fmt.Sprintf("%s - [%s] given", errorMessage, actualValue), slices.Contains(context.Params, actualValue)
+	}
+
+	// If no value was found, we then try to locate the type to give a more informative error
+	if _, isObject := context.Validation.Json.Value.(map[string]any); isObject {
+		return fmt.Sprintf("%s - Object given", errorMessage), false
+	} else if _, isArray := context.Validation.Json.Value.([]any); isArray {
+		return fmt.Sprintf("%s - Array given", errorMessage), false
+	} else {
+		return fmt.Sprintf("%s - Incompatiable type given", errorMessage), false
+	}
+}
+
+func isNotIn(context *FieldValidationContext) (string, bool) {
+	errorMessage := fmt.Sprintf("Value must not be in set: [%s]", strings.Join(context.Params, ", "))
+
+	if context.Validation.Json.IsNull {
+		return fmt.Sprintf("%s - [NULL] given", errorMessage), false
+	}
+
+	actualValue, valueFound := castValueToString(context.Validation.Json.Value)
+
+	// Verify the found value
+	if valueFound {
+		return fmt.Sprintf("%s - [%s] given", errorMessage, actualValue), !slices.Contains(context.Params, actualValue)
 	}
 
 	// If no value was found, we then try to locate the type to give a more informative error
