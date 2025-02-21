@@ -655,7 +655,11 @@ func castValueToString(jsonValue any) (string, bool) {
 	if value, isInt := jsonValue.(int); isInt {
 		actualValue = strconv.Itoa(value)
 	} else if value, isFloat := jsonValue.(float64); isFloat {
-		actualValue = strings.TrimRight(fmt.Sprintf("%f", value), "0.")
+		if value == 0 {
+			actualValue = "0"
+		} else {
+			actualValue = strings.TrimRight(fmt.Sprintf("%f", value), "0.")
+		}
 	} else if value, isString := jsonValue.(string); isString {
 		actualValue = value
 	} else if value, isString := jsonValue.(bool); isString {

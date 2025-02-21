@@ -63,6 +63,26 @@ func Test_it_can_validate_using_not_in_rule(t *testing.T) {
 	}
 }
 
+func Test_it_can_validate_using_not_in_rule_for_zero_int(t *testing.T) {
+	// Setup
+	type testData struct {
+		Data int `validation:"notIn:0"`
+	}
+
+	// Arrange
+	var errorBag *JsonValidator.ErrorBag
+
+	// Act
+	var data testData
+	err := JsonValidator.New().Validate([]byte(`{"Data": 0}`), &data)
+	_ = errors.As(err, &errorBag)
+
+	// Assert
+	require.True(t, errorBag != nil)
+	require.True(t, errorBag.HasFailedKeyAndRule("Data", "notIn"))
+	require.Equal(t, 1, errorBag.CountErrors())
+}
+
 func Test_it_prints_the_actual_value_for_the_not_in_rule(t *testing.T) {
 	// Setup
 	cases := []struct {
