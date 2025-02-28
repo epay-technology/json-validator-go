@@ -53,6 +53,7 @@ var rules = map[string]RuleFunction{
 	"between":            isBetween,
 	"min":                isMin,
 	"max":                isMax,
+	"maxSize":            maxSize,
 	"url":                isUrl,
 	"ip":                 isIp,
 	"email":              isEmail,
@@ -832,6 +833,19 @@ func isMax(context *FieldValidationContext) (string, bool) {
 	}
 
 	return errorMessage, value <= maxValue
+}
+
+func maxSize(context *FieldValidationContext) (string, bool) {
+	maxSize := context.GetIntParam(0)
+
+	bytes, err := json.Marshal(context.Validation.Json.Value)
+	if err != nil {
+		return fmt.Sprintf("The maximum allowed size is %d bytes", maxSize), false
+	}
+
+	actualSize := len(bytes)
+
+	return fmt.Sprintf("The maximum allowed size is %d bytes, got %d bytes", maxSize, actualSize), actualSize <= maxSize
 }
 
 func convertJsonValueToNumber(context *FieldValidationContext) (float64, bool) {
