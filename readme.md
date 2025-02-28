@@ -117,6 +117,7 @@ Name *string `json:"name" validation:"present|MyComposite:255"` // Name must be 
 | `between:{x},{z}`                | Checks that the value is a number between `{x}` and `{z}` inclusively                                                                                              |
 | `min:{x}`                        | Checks that the value is a number greater than or equal to `{x}`                                                                                                   |
 | `max:{x}`                        | Checks that the value is a number less than or equal to `{x}`                                                                                                      |
+| `maxSize:{x}`                    | Checks that the json-representation byte size is not larger then `{x}` bytes                                                                                       |
 | `url:{?options}`                 | Checks that the value is a non-empty URL string. An optional list of options can be given to allow certain formats. Options: [localhost]                           |
 | `ip`                             | Checks that the value is a non-empty IP string                                                                                                                     |
 | `email`                          | Checks that the value is a non-empty email string                                                                                                                  |
