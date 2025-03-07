@@ -4,6 +4,8 @@ github.com/epay-technology/package-conversions-go v0.0.2 h1:pSKolwplIxAx30lpggo2
 github.com/epay-technology/package-conversions-go v0.0.2/go.mod h1:6yg2bSfLjuRWv6TNctXJZuTTg3f0ZOYu5zJCoS+UGoo=
 github.com/epay-technology/package-conversions-go v1.0.0 h1:MES9WX9iFwMrdSzzzR+qhp/kEcunGYChPPgDvHVwnos=
 github.com/epay-technology/package-conversions-go v1.0.0/go.mod h1:bo+Sv7xDjs0DgDo/jHKozxH8VL1nBHsg+Oy/t3IImk0=
+github.com/epay-technology/package-conversions-go v1.0.2 h1:vapPmblCJUl22hDiy97nhRQYcsKT3eIAQcz5Dt+c9kQ=
+github.com/epay-technology/package-conversions-go v1.0.2/go.mod h1:bo+Sv7xDjs0DgDo/jHKozxH8VL1nBHsg+Oy/t3IImk0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=

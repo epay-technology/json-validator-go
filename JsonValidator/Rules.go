@@ -3,6 +3,7 @@ package JsonValidator
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/epay-technology/package-conversions-go/CountryCode"
 	"github.com/epay-technology/package-conversions-go/CurrencyCode"
 	"net"
 	"net/url"
@@ -47,6 +48,7 @@ var rules = map[string]RuleFunction{
 	"in":                 isIn,
 	"notIn":              isNotIn,
 	"alpha3Currency":     Alpha3Currency,
+	"alpha2Country":      Alpha2Country,
 	"uuid":               isUuid,
 	"zeroableUuid":       isZeroableUuid,
 	"regex":              matchesRegex,
@@ -685,6 +687,31 @@ func Alpha3Currency(context *FieldValidationContext) (string, bool) {
 	// Verify the found value
 	if isString {
 		return fmt.Sprintf("%s - [%s] given", errorMessage, value), CurrencyCode.FromString(value) != nil
+	}
+
+	// If no value was found, we then try to locate the type to give a more informative error
+	if _, isObject := context.Validation.Json.Value.(map[string]any); isObject {
+		return fmt.Sprintf("%s - Object given", errorMessage), false
+	} else if _, isArray := context.Validation.Json.Value.([]any); isArray {
+		return fmt.Sprintf("%s - Array given", errorMessage), false
+	} else {
+		return fmt.Sprintf("%s - Incompatiable type given", errorMessage), false
+	}
+}
+
+func Alpha2Country(context *FieldValidationContext) (string, bool) {
+	errorMessage := "Must be a valid alpha-2 country code"
+
+	if context.Validation.Json.IsNull {
+		return fmt.Sprintf("%s - [NULL] given", errorMessage), false
+	}
+
+	// Extract the actual value from the json
+	value, isString := context.Validation.Json.Value.(string)
+
+	// Verify the found value
+	if isString {
+		return fmt.Sprintf("%s - [%s] given", errorMessage, value), CountryCode.FromString(value) != nil
 	}
 
 	// If no value was found, we then try to locate the type to give a more informative error

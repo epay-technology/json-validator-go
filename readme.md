@@ -123,3 +123,4 @@ Name *string `json:"name" validation:"present|MyComposite:255"` // Name must be 
 | `email`                          | Checks that the value is a non-empty email string                                                                                                                  |
 | `json`                           | Checks that the value is a valid json string                                                                                                                       |
 | `alpha3Currency`                 | Checks that the value is a valid alpha-3 currency code                                                                                                             |
+| `alpha2Country`                  | Checks that the value is a valid alpha-2 country code                                                                                                              |
