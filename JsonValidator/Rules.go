@@ -53,6 +53,7 @@ var rules = map[string]RuleFunction{
 	"zeroableUuid":       isZeroableUuid,
 	"regex":              matchesRegex,
 	"between":            isBetween,
+	"phoneNumberE164":    isE164PhoneNumber,
 	"min":                isMin,
 	"max":                isMax,
 	"maxSize":            maxSize,
@@ -819,6 +820,16 @@ func isDate(context *FieldValidationContext) (string, bool) {
 
 	_, err := time.Parse("2006-01-02", value)
 	return fmt.Sprintf("%s - Got: [%s]", errorMessage, value), err == nil
+}
+
+func isE164PhoneNumber(context *FieldValidationContext) (string, bool) {
+	errorMessage := "Must be a valid e164 phone number string with a space between country code and number | Format: '+[countryCode] [number]' | Max length: countryCode=3 number=12"
+
+	if _, ok := context.Validation.Json.Value.(string); !ok {
+		return errorMessage + " - Non string given", false
+	}
+
+	return errorMessage, verifyRegex(context, `^\+\d{1,3} \d{1,12}$`)
 }
 
 func isBetween(context *FieldValidationContext) (string, bool) {

@@ -124,3 +124,4 @@ Name *string `json:"name" validation:"present|MyComposite:255"` // Name must be 
 | `json`                           | Checks that the value is a valid json string                                                                                                                       |
 | `alpha3Currency`                 | Checks that the value is a valid alpha-3 currency code                                                                                                             |
 | `alpha2Country`                  | Checks that the value is a valid alpha-2 country code                                                                                                              |
+| `phoneNumberE164`                | Checks that the value is a non-empty phone number string in the e.164 format with a single space between country code and subscriber number                        |
