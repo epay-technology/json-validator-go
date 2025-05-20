@@ -104,6 +104,7 @@ Name *string `json:"name" validation:"present|MyComposite:255"` // Name must be 
 | `lenBetween:{n},{m}`             | Checks value is countable and length is between `{n}` and `{m}` inclusively (`string`, `array`, `object`)                                                          |
 | `array`                          | Checks value is an `array`/`slice`                                                                                                                                 |
 | `object`                         | Checks value is an `object`/`map`/`struct`                                                                                                                         |
+| `objectMissingKeys:{x},{z},...`  | Checks value is an `object`/`map`/`struct` which does not contain the keys `{x},{z},...`                                                                           |
 | `string`                         | Checks value is a `string`                                                                                                                                         |
 | `int/integer`                    | Checks value is an `integer`                                                                                                                                       |
 | `float`                          | Checks value is a `float`                                                                                                                                          |

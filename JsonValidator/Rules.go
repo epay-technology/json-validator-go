@@ -41,6 +41,7 @@ var rules = map[string]RuleFunction{
 	"date":               isDate,
 	"array":              isArray,
 	"object":             isObject,
+	"objectMissingKeys":  isObjectMissingKeys,
 	"string":             isString,
 	"int":                isInteger,
 	"float":              isFloat,
@@ -163,7 +164,7 @@ func missingWith(context *FieldValidationContext) (string, bool) {
 
 	siblingJsonKeys := getNeighborJsonKeys(context, siblingNames)
 
-	return fmt.Sprintf("Must not be present when %s is present", siblingJsonKeys[0]), false
+	return fmt.Sprintf("Must not be present when %s is present", strings.Join(siblingJsonKeys, ",")), false
 }
 
 func missingWithAny(context *FieldValidationContext) (string, bool) {
@@ -543,6 +544,23 @@ func isObject(context *FieldValidationContext) (string, bool) {
 	isValidKind := slices.Contains([]reflect.Kind{reflect.Struct, reflect.Map}, valueKind)
 
 	return errorMessage, isValidKind
+}
+
+func isObjectMissingKeys(context *FieldValidationContext) (string, bool) {
+	if message, isValid := isObject(context); !isValid {
+		return message, false
+	}
+
+	forbiddenKeys := context.Params
+	message := fmt.Sprintf("Must not contain any of the following keys: [%s]", strings.Join(forbiddenKeys, ","))
+
+	for _, key := range reflect.ValueOf(context.Validation.Json.Value).MapKeys() {
+		if slices.Contains(forbiddenKeys, key.String()) {
+			return message, false
+		}
+	}
+
+	return message, true
 }
 
 func isString(context *FieldValidationContext) (string, bool) {
